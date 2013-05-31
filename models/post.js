@@ -195,42 +195,60 @@ module.exports = function(app, mongoose) {
 		});
 	});
 
-	app.get('/posts/:year/:month/:day/:page?', function(req, res){
-		// Post.find({}).distinct("date", function(err, docs){
-		// 	console.log(docs.sort());
-		// 	res.send(docs.sort().reverse());
-		// });
-		//now = new Date();
-		//today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+	app.get('/posts/meta/:year/:month/:day', function(req, res){
 		year = req.params.year;
 		month = req.params.month - 1;
 		day = req.params.day;
+		start = new Date(year,month,day);
+		end = new Date(year,month,day);
+		end.setDate(end.getDate()+1);
+
+		Post.find({date: { $gt: start, $lte :end }}).select("channel").exec(function(err, docs){
+			data = {};
+			docs.forEach(function(elem, index, array){
+				data[elem.channel] = (data[elem.channel] ? data[elem.channel] : 0) + 1;
+			});
+
+			res.send(data);
+		});
+	});
+
+	app.get('/posts/:year/:month/:day/:channel/:page?', function(req, res){
+
+		year = req.params.year;
+		month = req.params.month - 1;
+		day = req.params.day;
+		channel = req.params.channel;
 		page = req.params.page;
 		page_size = 5;
 
 		start = new Date(year,month,day);
 		end = new Date(year,month,day);
 		end.setDate(end.getDate()+1);
-		// console.log(start);
-		// console.log(end);
-		// res.send("OK");
-		// Post.find({}).sort('-date').limit(1).exec(function(err, result){
-		// 	newest = result[0].date;
-		// 	start = new Date(newest.getFullYear(), newest.getMonth(), newest.getDate());
-		Post.find({date: { $gt: start, $lte :end }}).exec(function(err, docs){
-			//count = docs.length;
+
+		Post.find({date: { $gt: start, $lte :end }, channel: channel}).exec(function(err, docs){
 			data = {};
 			data.meta = {};
 			data.meta.count = docs.length;
 			data.meta.next = data.meta.count - page*page_size > 0;
 			data.docs = docs.slice((page-1)*page_size, page*page_size);
-			// docs.meta.count = count; 
+
+			data.docs.forEach(function(elem, index, array){
+				score = elem.rank();
+				elem = elem.toObject();
+				elem.score = score;
+				delete elem.voter_ids;
+				array[index] = elem;
+				
+			});
+			data.docs.sort(compare);
 			res.send(data);
 		});
-		// });
 		
 		
 	});
+
+	
 
 	return {
 		findByString: findByString,

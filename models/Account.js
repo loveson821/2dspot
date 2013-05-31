@@ -22,7 +22,9 @@ module.exports = function(app, config, mongoose, nodemailer) {
     email:     { type: String, unique: true },
     password:  { type: String },
     photoUrl:  { type: String },
-    name: { type: String }
+    name: { type: String },
+    country: { type: String},
+    subscribes: [{ type: String }]
     // name: {
     //   first:   { type: String },
     //   last:    { type: String },
@@ -165,9 +167,24 @@ module.exports = function(app, config, mongoose, nodemailer) {
     console.log('Save command was sent');
   };
 
+  var addSubscribe = function(userId, channel){
+    Account.findOne({_id: userId}).exec(function(err, account){
+      account.subscribes.push(channel);
+    });
+  };
+
+  var removeSubscribe = function(userId, channel){
+    Account.findOne({_id: userId}).exec(function(err, account){
+      index = account.subscribes.indexOf(channel);
+      account.subscribes.splice(index,index);
+    });
+  };
+
   app.get('/account', app.ensureAuthenticated, function(req, res){
     res.send(req.user);
   });
+
+
 
   return {
     findById: findById,
