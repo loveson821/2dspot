@@ -1,0 +1,27 @@
+
+<% if (!user) { %>
+	<h2>Welcome! Please log in.</h2>
+<% } else { %>
+	<h2>Hello, <%= user.username %>.</h2>
+<% } %>
+
+
+
+<form action="/post" method="post" enctype="multipart/form-data">
+	<div>
+	<label>Title:</label>
+	<input type="text" name="title"/><br/>
+	</div>
+	<div>
+	<label>body:</label>
+	<input type="text" name="body"/>
+	</div>
+	<div>
+	<label>pic:</label>
+	<input type="file" name="pic"/>
+	</div>
+
+	<div>
+	<input type="submit" value="Submit"/>
+	</div>
+</form>

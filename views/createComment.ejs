@@ -1,0 +1,20 @@
+<% if (!user) { %>
+  <h2>Welcome! Please log in.</h2>
+<% } else { %>
+  <h2>Hello, <%= user.email %>.</h2>
+<% } %>
+
+
+
+<form action="/post/<%= postid %>" method="post">
+  
+  <div>
+  <label>body:</label>
+  <input type="text" name="body"/>
+  </div>
+  <div>
+
+  <div>
+  <input type="submit" value="Submit"/>
+  </div>
+</form>

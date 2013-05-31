@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js">
+</script>
+<script>
+$(document).ready(function(){
+  $("p").click(function(){
+    $(this).hide();
+  });
+  
+  $("#submit").on("click",function(e){
+    e.preventDefault();
+    var input = $("form");
+    var fd = new FormData();    
+    fd.append( 'file', input.find("input[type=file]")[0].files[0] );
+
+    $.ajax({
+      url: '/file-upload',
+      data: fd,
+      processData: false,
+      contentType: false,
+      type: 'POST',
+      success: function(data){
+        alert(data);
+      }
+    });
+  });
+  
+  
+});
+</script>
+</head>
+<body>
+<form method="post" enctype="multipart/form-data" action="/file-upload"><input type="text" name="username"><input type="password" name="password"><input type="file" name="thumbnail"><input id="submit" type="button"></form>
+</body>
+</html>
+
+
