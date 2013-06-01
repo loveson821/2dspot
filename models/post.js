@@ -172,7 +172,20 @@ module.exports = function(app, mongoose) {
 
 		}
 		
+	});
 
+	app.get('/post/:id/comment/:page',function(req, res){
+		postId = req.params.id;
+		page = req.params.page;
+		Post.find({_id: postId}).exec(function(err, doc){
+			doc = doc[0];
+			data = {}
+			data.count = doc.comments.length;
+			data.next = data.count - page*20 > 0;
+			data.comments = doc.comments.slice((page-1)*20, page*20);
+
+			res.send(data);
+		});
 	});
 
 	app.get('/posts/:p?', function(req, res){
@@ -239,6 +252,9 @@ module.exports = function(app, mongoose) {
 				elem.score = score;
 				delete elem.voter_ids;
 				array[index] = elem;
+				elem.comments_len = elem.comments.length;
+				elem.comments_next = elem.comments.length > 20;
+				elem.comments = elem.comments.slice(0,21);
 				
 			});
 			data.docs.sort(compare);
@@ -247,8 +263,6 @@ module.exports = function(app, mongoose) {
 		
 		
 	});
-
-	
 
 	return {
 		findByString: findByString,
