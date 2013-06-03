@@ -12,6 +12,7 @@ var express = require('express')
   , passport = require('passport')
   , util = require('util')
   , LocalStrategy = require('passport-local').Strategy
+  , FacebookStrategy = require('passport-facebook').Strategy
   , winston = require('winston') // logger module
   , swagger = require('swagger-node-express')
   ;
@@ -127,6 +128,7 @@ app.get('/logout', function(req, res){
 });
 
 require('./plugins/pass.js')(app,passport,LocalStrategy,models.Account);
+require('./plugins/pass-facebook.js')(app, passport, FacebookStrategy, models.Account);
 
 //app.listen(3000);
 

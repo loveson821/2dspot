@@ -149,9 +149,36 @@ module.exports = function(app, config, mongoose, nodemailer) {
     return false;
   };
 
+  var findOrRegister = function(userObj, callback){
+    console.log(userObj.name);
+    Account.findOne({email: userObj.email}).exec(function(err, user){
+      if(err){ res.send(400); }
+      if(!user){  // User not exist in our database
+        var account = new Account({
+            email: userObj.email,
+            name: userObj.name,
+            photoUrl: userObj.photo
+        });
+        account.save(function(err){
+          callback(err, account);
+        });
+      }
+      else{ // User exist
+        callback(null,user);
+      }
+    });
+  };
+
   var register = function(email, password, firstName, lastName) {
-    var shaSum = crypto.createHash('sha256');
-    shaSum.update(password);
+    var password;
+    if( password){
+      shaSum = crypto.createHash('sha256');
+      shaSum.update(password);
+      password = shaSum.digest('hex');
+    }
+    else{
+      password = null;
+    }
 
     console.log('Registering ' + email);
     var user = new Account({
@@ -161,7 +188,7 @@ module.exports = function(app, config, mongoose, nodemailer) {
         last: lastName,
         full: firstName + ' ' + lastName
       },
-      password: shaSum.digest('hex')
+      password: password
     });
     user.save(registerCallback);
     console.log('Save command was sent');
@@ -196,6 +223,7 @@ module.exports = function(app, config, mongoose, nodemailer) {
     addContact: addContact,
     removeContact: removeContact,
     login: login,
-    Account: Account
+    Account: Account,
+    findOrRegister: findOrRegister
   }
 }

@@ -61,6 +61,9 @@ module.exports = function(app, passport, LocalStrategy, Account) {
 	  })(req, res, next);
 	});
 
-
+	app.get('/logout', function(req, res){
+  	req.logout();
+  	res.send(200);
+	});
 	
 }
