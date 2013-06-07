@@ -4,10 +4,10 @@ module.exports = function(app, mongoose) {
 
 	var PostSchema = new mongoose.Schema({
 		title:  String,
-		author: String,
+		author: {type: Schema.ObjectId, ref: 'Account'},
 		body:   String,
 		comments: [{  body: String, date: Date, 
-                  author: String, user: Schema.ObjectId 
+                  author: { type: Schema.ObjectId, ref: 'Account'}
                 }],
 		date: { type: Date, default: Date.now },
 		hidden: Boolean,
@@ -132,7 +132,7 @@ module.exports = function(app, mongoose) {
 		}else{
       fs.unlink(req.files.pic.path);
     }
-		req.body.author = req.user.email;
+		req.body.author = req.user;
 		create(req.body);
 		res.send(req.body);
 	});
@@ -143,7 +143,7 @@ module.exports = function(app, mongoose) {
 
 	
 	app.get('/post/:id', function(req, res){
-		Post.find({_id: req.params.id}).exec(function(err,doc){
+		Post.find({_id: req.params.id}).populate('author comments.author').exec(function(err,doc){
 			if(err) res.send(err);
 			res.send(doc);
 		});
@@ -164,8 +164,7 @@ module.exports = function(app, mongoose) {
 
 			com = req.body;
 			com.date = new Date();
-			com.author = req.user.email;
-			com.user = req.user;
+			com.author = req.user;
 			addComment( req.params.id, com , res, function(res){
 				res.redirect('/post/'+req.params.id);
 			});
@@ -177,7 +176,7 @@ module.exports = function(app, mongoose) {
 	app.get('/post/:id/comment/:page',function(req, res){
 		postId = req.params.id;
 		page = req.params.page;
-		Post.find({_id: postId}).exec(function(err, doc){
+		Post.find({_id: postId}).populate('comments.author').exec(function(err, doc){
 			doc = doc[0];
 			data = {}
 			data.count = doc.comments.length;
@@ -193,7 +192,7 @@ module.exports = function(app, mongoose) {
 		//channel = req.user.channel != 'undefined' ? req.user.channel : null;
 		page_size = 100;
 		Post.find({}).sort('-date').skip(page_size*page).limit(page_size)
-			.exec(function(err, docs){
+			.populate('author comments.author').exec(function(err, docs){
 			docs.forEach(function(elem, index, array){
 				score = elem.rank();
 				elem = elem.toObject();
@@ -216,7 +215,8 @@ module.exports = function(app, mongoose) {
 		end = new Date(year,month,day);
 		end.setDate(end.getDate()+1);
 
-		Post.find({date: { $gt: start, $lte :end }}).select("channel").exec(function(err, docs){
+		Post.find({date: { $gt: start, $lte :end }}).select("channel")
+			.populate('author comments.author').exec(function(err, docs){
 			data = {};
 			docs.forEach(function(elem, index, array){
 				data[elem.channel] = (data[elem.channel] ? data[elem.channel] : 0) + 1;
@@ -239,7 +239,8 @@ module.exports = function(app, mongoose) {
 		end = new Date(year,month,day);
 		end.setDate(end.getDate()+1);
 
-		Post.find({date: { $gt: start, $lte :end }, channel: channel}).exec(function(err, docs){
+		Post.find({date: { $gt: start, $lte :end }, channel: channel})
+			.populate('author comments.author').exec(function(err, docs){
 			data = {};
 			data.meta = {};
 			data.meta.count = docs.length;

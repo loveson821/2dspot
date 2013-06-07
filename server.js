@@ -1,4 +1,5 @@
 var express = require('express')
+  , expressValidator = require('express-validator')
   , http = require('http')
   , mongo = require('mongodb')
   , mongoose = require('mongoose')
@@ -23,19 +24,7 @@ app.server      = http.createServer(app);   // Create an http server
 app.sessionStore = new MemoryStore();       // Create a session store to share between methods
 
 //Configurations
-var config = {
-  //mail: require('./config/mail')
-  logFile: fs.createWriteStream('./myLogFile.log', {flags: 'a'}), //use {flags: 'w'} to open in write mode
-  logger: new (winston.Logger)({
-    transports: [
-      new (winston.transports.Console)(),
-      new (winston.transports.File)({ filename: 'somefile.log' })
-    ]
-  })
-  //  --  if want to log to file -- //
-  // logger.add(winston.transports.File)
-  //       .remove(winston.transports.Console);
-};
+var config = require('./config');
 
 app.logger = config.logger;
 
@@ -56,6 +45,7 @@ app.configure(function(){
   app.use(express.bodyParser( {uploadDir:'./public/images/uploads'} ));
   app.use(express.methodOverride());
   app.use(express.cookieParser());
+  app.use(expressValidator);
   app.use(express.session({
     cookie: { maxAge: 60000 },
     secret: 'keyboard cat 2dspot',
@@ -97,7 +87,7 @@ var models = {
   //Comment: require('./models/comment')(app, mongoose)
 };
 
-models.Account.register("bob","123","Ng","Ka Long");
+//models.Account.register("loveson821@gmail.com","123","Ng","Ka Long");
 
 
 // var controllers = {

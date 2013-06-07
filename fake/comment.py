@@ -19,12 +19,11 @@ for p in posts.find():
     comment = {}
     # pick an account	
     account = choice(accounts)
-    comment['author'] = account['email']
-    comment['user'] = account['_id']
+    comment['author'] = account['_id']
     comment['date'] = datetime.now()
     comment['body'] = ''
     for x in xrange(0,randrange(5)):
-      comment['body'] = comment['body'] + choice(sents)
+      comment['body'] = comment['body'] + choice(sents).strip()
 
     p['comments'].append(comment)
 

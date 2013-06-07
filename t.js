@@ -1,8 +1,9 @@
-var mt = require('mersenne');
+var redis = require("redis"),
+    config = require('./config');
 
 
-a = []
-for(var i = 0; i< 1000; i++)
-  console.log(mt.rand(1000));
+client = redis.createClient(config.redisPort, config.redisDNS);
+client = client.auth(config.redisPass, function(err){
+	console.log('ok');
+});
 
-console.log(a);

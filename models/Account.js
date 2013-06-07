@@ -1,5 +1,7 @@
 module.exports = function(app, config, mongoose, nodemailer) {
   var crypto = require('crypto');
+  var gravatar = require('gravatar');
+  var util = require('util');
 
   var Status = new mongoose.Schema({
     name: {
@@ -20,7 +22,7 @@ module.exports = function(app, config, mongoose, nodemailer) {
 
   var AccountSchema = new mongoose.Schema({
     email:     { type: String, unique: true },
-    password:  { type: String },
+    password:  { type: String, select: false },
     photoUrl:  { type: String },
     name: { type: String },
     country: { type: String},
@@ -42,13 +44,6 @@ module.exports = function(app, config, mongoose, nodemailer) {
   });
 
   var Account = mongoose.model('Account', AccountSchema);
-
-  var registerCallback = function(err) {
-    if (err) {
-      return console.log(err);
-    };
-    return console.log('Account was created');
-  };
 
   var changePassword = function(accountId, newpassword) {
     var shaSum = crypto.createHash('sha256');
@@ -169,7 +164,7 @@ module.exports = function(app, config, mongoose, nodemailer) {
     });
   };
 
-  var register = function(email, password, firstName, lastName) {
+  var localRegister = function(email, password, firstName, lastName, callback) {
     var password;
     if( password){
       shaSum = crypto.createHash('sha256');
@@ -177,7 +172,7 @@ module.exports = function(app, config, mongoose, nodemailer) {
       password = shaSum.digest('hex');
     }
     else{
-      password = null;
+      return console.log("no password error");
     }
 
     console.log('Registering ' + email);
@@ -188,10 +183,14 @@ module.exports = function(app, config, mongoose, nodemailer) {
         last: lastName,
         full: firstName + ' ' + lastName
       },
-      password: password
+      password: password,
+      photoUrl: gravatar.url(email, {s: '100', d: 'mm'})
     });
-    user.save(registerCallback);
-    console.log('Save command was sent');
+    user.save(function(err){
+          callback(err, user);
+    });
+    
+
   };
 
   var addSubscribe = function(userId, channel){
@@ -207,15 +206,41 @@ module.exports = function(app, config, mongoose, nodemailer) {
     });
   };
 
+
   app.get('/account', app.ensureAuthenticated, function(req, res){
     res.send(req.user);
   });
 
+  app.get('/account/create', function(req, res){
+    res.render('createAccount');
+  });
+
+  app.post('/account', function(req, res){
+
+    req.params = req.body;
+    console.log(req.body);
+
+    req.assert('email', 'required').notEmpty();
+    req.assert('email', 'valid email required').isEmail();
+    req.assert('password', '6 to 20 characters required').len(6, 20);
+
+    var errors = req.validationErrors();
+    if (errors) {
+      res.send('There have been validation errors: ' + util.inspect(errors), 500);
+      return;
+    }
+
+    localRegister(req.body.email, req.body.password, req.body.firstname,req.body.lastName, function(err, account){
+      if(err) res.send('Unexpected error', 500);
+      console.log('Save command was sent');
+      res.redirect('/account');
+    });
+  });
 
 
   return {
     findById: findById,
-    register: register,
+    register: localRegister,
     hasContact: hasContact,
     forgotPassword: forgotPassword,
     changePassword: changePassword,

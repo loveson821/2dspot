@@ -41,8 +41,6 @@ module.exports = function(app, passport, FacebookStrategy, Account) {
 				  //userObj.name = profile._json
 				  Account.findOrRegister(userObj, function(err, user){
 				  	if(err){ return done(err);}
-				  	console.log('get return user ' + user);
-				  	console.log(profile);
 				  	return done(null, user);
 				  });
 			  	// return done(null, profile);

@@ -16,10 +16,13 @@ db.once('open', function callback () {
 
 var AccountSchema = new mongoose.Schema({
     email:     { type: String, unique: true },
-    password:  { type: String },
+    password:  { type: String, select: false },
     photoUrl:  { type: String },
-    name: { type: String }
-});
+    name: { type: String },
+    country: { type: String},
+    subscribes: [{ type: String }]
+
+  });
 
 AccountSchema.statics.random = function(callback) {
   this.count(function(err, count) {
@@ -44,23 +47,24 @@ return console.log('Account was created');
 var Schema = mongoose.Schema;
 
 var PostSchema = new mongoose.Schema({
-	title:  String,
-	author: String,
-	body:   String,
-	comments: [{  body: String, date: Date, 
-              author: String, user: Schema.ObjectId 
-            }],
-	date: { type: Date, default: Date.now },
-	hidden: Boolean,
-	voter_ids: [{ type: Schema.ObjectId }],
-	pics: [ { type: String } ],
-	meta: {
-		votes: Number,
-		avs:  Number,
-		pv: Number
-	},
-	channel: String
-  });
+    title:  String,
+    author: {type: Schema.ObjectId, ref: 'Account'},
+    body:   String,
+    comments: [{  body: String, date: Date, 
+                  author: { type: Schema.ObjectId, ref: 'Account'}
+                }],
+    date: { type: Date, default: Date.now },
+    hidden: Boolean,
+    voter_ids: [{ type: Schema.ObjectId, select: false }],
+    pics: [ { type: String } ],
+    meta: {
+      votes: Number,
+      avs:  Number,
+      pv: Number
+    },
+    channel: String
+
+    });
 
 PostSchema.methods.rank = function(){
 	var t = this.date - new Date(2013,4,25);
@@ -70,23 +74,31 @@ PostSchema.methods.rank = function(){
 var Post = mongoose.model('Post', PostSchema);
 
 var crypto = require('crypto');
-var regist = function(email, password, firstName, lastName) {
-    var shaSum = crypto.createHash('sha256');
-    shaSum.update(password);
+var regist = function(email, password, firstName, lastName, photo) {
+    var password;
+    if( password){
+      shaSum = crypto.createHash('sha256');
+      shaSum.update(password);
+      password = shaSum.digest('hex');
+    }
+    else{
+      return console.log("no password error");
+    }
 
     console.log('Registering ' + email);
     var user = new Account({
-      email: firstname,
+      email: email,
       name: {
         first: firstName,
         last: lastName,
         full: firstName + ' ' + lastName
       },
-      password: shaSum.digest('hex')
+      password: password,
+      photoUrl: photo
     });
     user.save(registerCallback);
     console.log('Save command was sent');
-};
+  };
 
 var fs = require('fs');
 
@@ -94,6 +106,8 @@ var FakeAccount = function(){
 	var ffn = fs.readFileSync('female-first-name.txt').toString().split("\n");
 	var mfn = fs.readFileSync('male-first-name.txt').toString().split("\n");
 	var aln = fs.readFileSync('all-last-name.txt').toString().split("\n");
+  var photos = fs.readdirSync("/Users/sin/Dropbox/2dspot/public/images/profilePictures");
+
 
 	function onlyFirst( array ){
 		var size = array.length;
@@ -113,6 +127,7 @@ var FakeAccount = function(){
 	ffn_size = ffn.length;
 	mfn_size = mfn.length;
 	aln_size = aln.length;
+  pho_size = photos.length;
 
 	function RandFirstName(){
 		if( Math.random() > 0.5 ) 
@@ -134,7 +149,8 @@ var FakeAccount = function(){
 	for( var i = 0; i < 1000; i++ ){
 		firstname = RandFirstName();
 		lastname = RandLastName();
-		regist(firstname,"123",firstname,lastname);
+    photo = photos[ Math.floor(Math.random()* pho_size )];
+		regist(firstname,"123",firstname,lastname, photo);
 		console.log(i);
 	}
 
@@ -162,7 +178,7 @@ var FakePost = function(){
 			account = doc;
 			post = {}
 			post.title = sents[Math.floor(mt.rand(sents_size))];
-			post.author = account.email;
+			post.author = account;
 
 			body_size = Math.floor(mt.rand(6)) + 3;
       post.body = "";
