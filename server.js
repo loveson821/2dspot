@@ -24,7 +24,15 @@ app.server      = http.createServer(app);   // Create an http server
 app.sessionStore = new MemoryStore();       // Create a session store to share between methods
 
 //Configurations
-var config = require('./config');
+var config = {
+  logFile: fs.createWriteStream('./myLogFile.log', {flags: 'a'}), //use {flags: 'w'} to open in write mode
+  logger: new (winston.Logger)({
+    transports: [
+      new (winston.transports.Console)(),
+      new (winston.transports.File)({ filename: 'somefile.log' })
+    ]
+  })
+};
 
 app.logger = config.logger;
 
