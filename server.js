@@ -55,7 +55,7 @@ app.configure(function(){
   app.use(express.cookieParser());
   app.use(expressValidator);
   app.use(express.session({
-    cookie: { maxAge: 60000 },
+    cookie: { maxAge: 2592000000 },
     secret: 'keyboard cat 2dspot',
     key: '2dspot.sid',
     store: app.sessionStore

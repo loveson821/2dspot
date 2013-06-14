@@ -1,6 +1,7 @@
 module.exports = function(app, mongoose) {
   var fs = require('fs');
 	var Schema = mongoose.Schema;
+	var ei = require('../plugins/imageProcess.js')(app);
 
 	var PostSchema = new mongoose.Schema({
 		title:  String,
@@ -14,7 +15,7 @@ module.exports = function(app, mongoose) {
 		voter_ids: [{ type: Schema.ObjectId, select: false }],
 		pics: [ { type: String } ],
 		meta: {
-			votes: Number,
+			votes: { type: Number, default: 0 },
 			avs:  Number,
 			pv: Number
 		},
@@ -26,11 +27,10 @@ module.exports = function(app, mongoose) {
 
 	PostSchema.methods.rank = function(){
 		t = (this.date - new Date(2013,3,25))/1000;
-		logV = Math.log(Math.abs(this.meta.votes)) / Math.log(5);
+		logV = Math.log(Math.abs(this.meta.votes)+1) / Math.log(5);
 		y = this.meta.votes < 0 ? -1 : 1;
 
-		return logV + y * ( t/45000 );
-		//return t;
+		return logV * y + ( t/45000 );
 	};
 
 	var Post = mongoose.model('Post', PostSchema);
@@ -52,10 +52,12 @@ module.exports = function(app, mongoose) {
 	// 	post.save(createPostCallback);
 	// };
 
-	var create = function(obj){
+	var create = function(obj, callback){
 		console.log("create function");
 		var post = new Post(obj);
-		post.save(createPostCallback);
+		post.save(function(err){
+			callback(err, post);
+		});
 	};
 
 	var compare = function(a,b) {
@@ -126,15 +128,33 @@ module.exports = function(app, mongoose) {
 
 	app.post('/post', function(req, res, next){
 		if( req.files.pic.size ){
-			var path = req.files.pic.path;
-      console.log(path);
-			req.body.pics = [path];
+			path = req.files.pic.path;
+			targetPath = path + '.jpg';
+			// fs.rename(path, targetPath, function(err){
+			// 	if(err) throw err;
+			// });
+			fs.renameSync(path, targetPath);
+			req.body.pics = [targetPath];
+			req.body.author = req.user;
+			ei.thumbnails(targetPath, 'undefined',function(err, image){
+				if(err){
+					res.send(err);
+				}else{
+					create(req.body, function(err, post){
+						if( err) throw err;
+						else{
+							res.send(post);
+						}
+							
+					});
+					
+				}
+			});
 		}else{
       fs.unlink(req.files.pic.path);
     }
-		req.body.author = req.user;
-		create(req.body);
-		res.send(req.body);
+		
+		
 	});
 
 	app.get('/post', app.ensureAuthenticated, function(req, res){
@@ -233,7 +253,7 @@ module.exports = function(app, mongoose) {
 		day = req.params.day;
 		channel = req.params.channel;
 		page = req.params.page;
-		page_size = 5;
+		page_size = 20;
 
 		start = new Date(year,month,day);
 		end = new Date(year,month,day);
@@ -245,7 +265,7 @@ module.exports = function(app, mongoose) {
 			data.meta = {};
 			data.meta.count = docs.length;
 			data.meta.next = data.meta.count - page*page_size > 0;
-			data.docs = docs.slice((page-1)*page_size, page*page_size);
+			data.docs = docs;
 
 			data.docs.forEach(function(elem, index, array){
 				score = elem.rank();
@@ -259,6 +279,8 @@ module.exports = function(app, mongoose) {
 				
 			});
 			data.docs.sort(compare);
+			data.docs = docs.slice((page-1)*page_size, page*page_size);
+
 			res.send(data);
 		});
 		

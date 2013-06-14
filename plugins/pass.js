@@ -1,5 +1,9 @@
 module.exports = function(app, passport, LocalStrategy, Account) {
 
+	var sucMsg = {
+		code: 201,
+		success: 1
+	}
 	
 	function findById(id, fn) {
 	  return Account.findById(id,fn);
@@ -50,12 +54,17 @@ module.exports = function(app, passport, LocalStrategy, Account) {
       console.log(req.params);
 	    if (err) { return next(err) }
 	    if (!user) {
-	      req.flash('error', info.message);       
-	      return res.redirect('/login')
+	      req.flash('error', info.message);
+      	errMsg = {
+					code: 400,
+					success: 0
+				}
+	      errMsg.error = info.message;
+	      return res.send(errMsg);
 	    }
 	    req.logIn(user, function(err) {
 	      if (err) { return next(err); }
-	      return res.send(201);
+	      return res.send(sucMsg);
 	      //return res.redirect('/users/' + user.email);
 	    });
 	  })(req, res, next);

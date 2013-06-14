@@ -88,11 +88,7 @@ var regist = function(email, password, firstName, lastName, photo) {
     console.log('Registering ' + email);
     var user = new Account({
       email: email,
-      name: {
-        first: firstName,
-        last: lastName,
-        full: firstName + ' ' + lastName
-      },
+      name: firstName + ' ' + lastName,
       password: password,
       photoUrl: photo
     });
@@ -150,7 +146,7 @@ var FakeAccount = function(){
 		firstname = RandFirstName();
 		lastname = RandLastName();
     photo = photos[ Math.floor(Math.random()* pho_size )];
-		regist(firstname,"123",firstname,lastname, photo);
+		regist(firstname,"123",firstname,lastname, 'profilePictures/'+photo);
 		console.log(i);
 	}
 

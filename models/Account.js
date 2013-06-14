@@ -21,7 +21,7 @@ module.exports = function(app, config, mongoose, nodemailer) {
   };
 
   var AccountSchema = new mongoose.Schema({
-    email:     { type: String, unique: true },
+    email:     { type: String, lowercase: true, unique: true },
     password:  { type: String, select: false },
     photoUrl:  { type: String },
     name: { type: String },
@@ -178,11 +178,7 @@ module.exports = function(app, config, mongoose, nodemailer) {
     console.log('Registering ' + email);
     var user = new Account({
       email: email,
-      name: {
-        first: firstName,
-        last: lastName,
-        full: firstName + ' ' + lastName
-      },
+      name: firstName + ' ' + lastName,
       password: password,
       photoUrl: gravatar.url(email, {s: '100', d: 'mm'})
     });

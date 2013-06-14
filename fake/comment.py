@@ -10,7 +10,7 @@ users = db.accounts
 
 accounts = [u for u in users.find()]
 
-sents = [i for i in open("/Users/sin/Dropbox/clean-corpus.en",'r')]
+sents = [i for i in open("/Users/sin/Dropbox/clean-corpus.en",'r') if i.strip() != '']
 
 for p in posts.find():
 #p = posts.find_one()
