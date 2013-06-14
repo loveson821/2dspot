@@ -1,62 +1,148 @@
-
-/**
- * Module dependencies.
- */
-
 var express = require('express')
-  , routes = require('./routes')
-  , user = require('./routes/user')
+  , expressValidator = require('express-validator')
   , http = require('http')
+  , mongo = require('mongodb')
+  , mongoose = require('mongoose')
+  , path = require('path')
+  , flash = require('connect-flash')    // flash message when redirect page
+  , nodemailer = require('nodemailer')  // send mail
+  , MemoryStore = require('connect').session.MemoryStore
+  , dbPath = 'mongodb://localhost/2dspot'
+  , events = require('events')
   , fs = require('fs')
-  , path = require('path');
+  , passport = require('passport')
+  , util = require('util')
+  , LocalStrategy = require('passport-local').Strategy
+  , FacebookStrategy = require('passport-facebook').Strategy
+  , winston = require('winston') // logger module
+  , swagger = require('swagger-node-express')
+  ;
 
-var app = express();
 
-// all environments
-app.set('port', process.env.PORT || 3000);
-app.set('views', __dirname + '/views');
-app.set('view engine', 'jade');
-app.use(express.favicon());
-app.use(express.logger('dev'));
-app.use(express.bodyParser());
-app.use(express.methodOverride());
-app.use(app.router);
-app.use(express.static(path.join(__dirname, 'public')));
+var app         = express();
+app.server      = http.createServer(app);   // Create an http server
+app.sessionStore = new MemoryStore();       // Create a session store to share between methods
 
-// development only
-if ('development' == app.get('env')) {
+//Configurations
+var config = {
+  logFile: fs.createWriteStream('./myLogFile.log', {flags: 'a'}), //use {flags: 'w'} to open in write mode
+  logger: new (winston.Logger)({
+    transports: [
+      new (winston.transports.Console)(),
+      new (winston.transports.File)({ filename: 'somefile.log' })
+    ]
+  })
+};
+
+app.logger = config.logger;
+
+app.ensureAuthenticated = function(req, res, next) {
+  if (req.isAuthenticated()) { return next(); }
+  res.redirect('/login');
+};
+
+
+
+app.configure(function(){
+  app.set('port', process.env.PORT || 3000);
+  app.set('views', __dirname + '/views');
+  app.use(express.static(path.join(__dirname, 'public')));
+  app.set('view engine', 'ejs');
+  app.use(express.favicon());
+  app.use(express.logger({stream: config.logFile}));
+  app.use(express.bodyParser( {uploadDir:'./public/images/uploads'} ));
+  app.use(express.methodOverride());
+  app.use(express.cookieParser());
+  app.use(expressValidator);
+  app.use(express.session({
+    cookie: { maxAge: 2592000000 },
+    secret: 'keyboard cat 2dspot',
+    key: '2dspot.sid',
+    store: app.sessionStore
+  }));
+  app.use(flash());
+  app.use(passport.initialize());
+  app.use(passport.session());
+  //app.use(app.router);
+  mongoose.connect(dbPath, function onMongooseError(err) {
+      if (err) throw err;
+  });
+
+  var db = mongoose.connection;
+  //db.on('error', console.error.bind(console, 'connection error:'));
+  db.once('open', function callback () {
+    console.log('Connected to DB');
+  });
+});
+
+app.configure('development', function(){
   app.use(express.errorHandler());
+});
+
+// Import the routes -- * All controllers under ./routes/
+/*
+fs.readdirSync('routes').forEach(function(file) {
+  if ( file[0] == '.' ) return;
+  var routeName = file.substr(0, file.indexOf('.'));
+  require('./routes/' + routeName)(app, models);
+});
+*/
+
+// Import the models
+var models = {
+  Account: require('./models/Account')(app, config, mongoose, nodemailer),
+  Post: require('./models/post')(app, mongoose)
+  //Comment: require('./models/comment')(app, mongoose)
+};
+
+//models.Account.register("loveson821@gmail.com","123","Ng","Ka Long");
+
+
+// var controllers = {
+//   AccountController: require('./routes/AccountController')(app, models.Account ),
+//   PostController: require('./routes/PostController')(app, models.Post)
+// }
+
+
+app.get('/', function(req, res){
+  res.render('index', { user: req.user });
+});
+
+/*
+app.get('/account', ensureAuthenticated, function(req, res){
+  res.send(req.user);
+  //console.log(req.user);
+  //res.render('account', { user: req.user });
+});
+*/
+
+app.get('/login', function(req, res){
+  res.render('login', { user: req.user, message: req.flash('error') });
+});
+
+app.get('/logout', function(req, res){
+  req.logout();
+  res.redirect('/');
+});
+
+require('./plugins/pass.js')(app,passport,LocalStrategy,models.Account);
+require('./plugins/pass-facebook.js')(app, passport, FacebookStrategy, models.Account);
+
+//app.listen(3000);
+
+module.exports = app;
+if (!module.parent) {
+http.createServer(app).listen(app.get('port'), function(){
+  console.log("Express server listening on port " + app.get('port'));
+});
 }
 
-app.get('/', routes.index);
-app.get('/users', user.list);
-var fs = require('fs');
-app.post('/file-upload', function(req, res) {
-    // get the temporary location of the file
-    console.log(req.files);
-    var tmp_path = req.files.file.path;
-    // set where the file should actually exists - in this case it is in the "images" directory
-    var target_path = './public/images/' + req.files.file.name;
-    // move the file from the temporary location to the intended location
-    fs.rename(tmp_path, target_path, function(err) {
-        if (err) throw err;
-        // delete the temporary file, so that the explicitly set temporary upload dir does not get filled with unwanted files
-        fs.unlink(tmp_path, function() {
-            if (err) throw err;
-            res.send('File uploaded to: ' + target_path + ' - ' + req.files.file.size + ' bytes');
-        });
-    });
-  });
+swagger.setAppHandler(app);
+swagger.configure("http://localhost:3000","0.1");
+// Simple route middleware to ensure user is authenticated.
+//   Use this route middleware on any resource that needs to be protected.  If
+//   the request is authenticated (typically via a persistent login session),
+//   the request will proceed.  Otherwise, the user will be redirected to the
+//   login page.
 
-app.get('/a', function(req,res){
-  fs.readFile('./index.html', function(err,page){
-    res.writeHead(200,{'Content-type': 'text/html'});
-    res.write(page);
-    res.end();
-  });
-  
-});
 
-http.createServer(app).listen(app.get('port'), function(){
-  console.log('Express server listening on port ' + app.get('port'));
-});
