@@ -2,6 +2,7 @@ module.exports = function(app, mongoose) {
   var fs = require('fs');
 	var Schema = mongoose.Schema;
 	var ei = require('../plugins/imageProcess.js')(app);
+	var formidable = require('formidable');
 
 	var PostSchema = new mongoose.Schema({
 		title:  String,
@@ -126,35 +127,56 @@ module.exports = function(app, mongoose) {
 	// };
 
 
-	app.post('/post', function(req, res, next){
-		if( req.files.pic.size ){
-			path = req.files.pic.path;
-			targetPath = path + '.jpg';
-			// fs.rename(path, targetPath, function(err){
-			// 	if(err) throw err;
-			// });
-			fs.renameSync(path, targetPath);
-			req.body.pics = [targetPath];
-			req.body.author = req.user;
-			ei.thumbnails(targetPath, 'undefined',function(err, image){
-				if(err){
-					res.send(err);
-				}else{
-					create(req.body, function(err, post){
-						if( err) throw err;
-						else{
-							res.send(post);
-						}
+	// app.post('/post', function(req, res, next){
+	// 	if( req.files.pic.size ){
+	// 		path = req.files.pic.path;
+	// 		targetPath = path + '.jpg';
+	// 		// fs.rename(path, targetPath, function(err){
+	// 		// 	if(err) throw err;
+	// 		// });
+	// 		fs.renameSync(path, targetPath);
+	// 		req.body.pics = [targetPath];
+	// 		req.body.author = req.user;
+	// 		ei.thumbnails(targetPath, 'undefined',function(err, image){
+	// 			if(err){
+	// 				res.send(err);
+	// 			}else{
+	// 				create(req.body, function(err, post){
+	// 					if( err) throw err;
+	// 					else{
+	// 						res.send(post);
+	// 					}
 							
-					});
+	// 				});
 					
-				}
-			});
-		}else{
-      fs.unlink(req.files.pic.path);
-    }
+	// 			}
+	// 		});
+	// 	}else{
+ //      		fs.unlink(req.files.pic.path);
+ //    	}
 		
 		
+	// });
+	app.post('/post',function(req, res) {
+	    var form = new formidable.IncomingForm;
+	    form.keepExtensions = true;
+	    form.uploadDir = 'tmp/';
+	 
+	    form.parse(req, function(err, fields, files){
+	      if (err) return res.end('You found error');
+	      console.log(files.pic);
+	    });
+	 
+	    form.on('progress', function(bytesReceived, bytesExpected) {
+	        console.log(bytesReceived + ' ' + bytesExpected);
+	    });
+	 
+	    form.on('error', function(err) {
+	        res.writeHead(200, {'content-type': 'text/plain'});
+	        res.end('error:\n\n'+util.inspect(err));
+	    });
+	    res.end('Done');
+	    return;
 	});
 
 	app.get('/post', app.ensureAuthenticated, function(req, res){
