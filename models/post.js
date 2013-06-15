@@ -2,6 +2,7 @@ module.exports = function(app, mongoose) {
   var fs = require('fs');
 	var Schema = mongoose.Schema;
 	var ei = require('../plugins/imageProcess.js')(app);
+	var fileUploader = require('../plugins/fileUploader.js')(app);
 	var formidable = require('formidable');
 
 	var PostSchema = new mongoose.Schema({
@@ -157,26 +158,30 @@ module.exports = function(app, mongoose) {
 		
 		
 	// });
-	app.post('/post',function(req, res) {
-	    var form = new formidable.IncomingForm;
-	    form.keepExtensions = true;
-	    form.uploadDir = 'tmp/';
+	// app.post('/post',function(req, res) {
+	//     var form = new formidable.IncomingForm;
+	//     form.keepExtensions = true;
+	//     form.uploadDir = 'tmp/';
 	 
-	    form.parse(req, function(err, fields, files){
-	      if (err) return res.end('You found error');
-	      console.log(files.pic);
-	    });
+	//     form.parse(req, function(err, fields, files){
+	//       if (err) return res.end('You found error');
+	//       console.log(files.pic);
+	//     });
 	 
-	    form.on('progress', function(bytesReceived, bytesExpected) {
-	        console.log(bytesReceived + ' ' + bytesExpected);
-	    });
+	//     form.on('progress', function(bytesReceived, bytesExpected) {
+	//         console.log(bytesReceived + ' ' + bytesExpected);
+	//     });
 	 
-	    form.on('error', function(err) {
-	        res.writeHead(200, {'content-type': 'text/plain'});
-	        res.end('error:\n\n'+util.inspect(err));
-	    });
-	    res.end('Done');
-	    return;
+	//     form.on('error', function(err) {
+	//         res.writeHead(200, {'content-type': 'text/plain'});
+	//         res.end('error:\n\n'+util.inspect(err));
+	//     });
+	//     res.end('Done');
+	//     return;
+	// });
+
+	app.post('/post', fileUploader.uploadFile, function(req, res){
+		res.send({'status':33});
 	});
 
 	app.get('/post', app.ensureAuthenticated, function(req, res){

@@ -50,7 +50,7 @@ app.configure(function(){
   app.set('view engine', 'ejs');
   app.use(express.favicon());
   app.use(express.logger({stream: config.logFile}));
-  app.use(express.bodyParser( {uploadDir:'./public/images/uploads'} ));
+  app.use(express.bodyParser( {keepExtensions: true, uploadDir:'./public/images/uploads'} ));
   app.use(express.methodOverride());
   app.use(express.cookieParser());
   app.use(expressValidator);
