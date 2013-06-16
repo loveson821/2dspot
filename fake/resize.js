@@ -1,9 +1,9 @@
-var ei = require('./plugins/imageProcess.js')({});
+var ei = require('../plugins/imageProcess.js')({});
 var path = require('path');
 var fs = require('fs');
 
 
-dir = path.resolve('./public/images/uploads/');
+dir = path.resolve('../public/images/uploads/');
 var imgs = fs.readdirSync(dir);
 // var params = [];
 
@@ -21,7 +21,7 @@ var imgs = fs.readdirSync(dir);
 
 // add some items to the queue
 for( img in imgs){
-    srcPath = path.resolve('./public/images/uploads/'+imgs[img]);
+    srcPath = path.resolve('../public/images/uploads/'+imgs[img]);
     // q.push({srcPath: srcPath}, function(err){
     // 	console.log('finished processing foo');
     // });

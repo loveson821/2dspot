@@ -15,7 +15,6 @@ var express = require('express')
   , LocalStrategy = require('passport-local').Strategy
   , FacebookStrategy = require('passport-facebook').Strategy
   , winston = require('winston') // logger module
-  , swagger = require('swagger-node-express')
   ;
 
 
@@ -137,8 +136,6 @@ http.createServer(app).listen(app.get('port'), function(){
 });
 }
 
-swagger.setAppHandler(app);
-swagger.configure("http://localhost:3000","0.1");
 // Simple route middleware to ensure user is authenticated.
 //   Use this route middleware on any resource that needs to be protected.  If
 //   the request is authenticated (typically via a persistent login session),

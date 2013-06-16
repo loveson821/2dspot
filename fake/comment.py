@@ -10,14 +10,14 @@ users = db.accounts
 
 accounts = [u for u in users.find()]
 
-sents = [i for i in open("/Users/sin/Dropbox/clean-corpus.en",'r') if i.strip() != '']
+sents = [i for i in open("/Users/sin/Dropbox/Resources/clean-corpus.en",'r') if i.strip() != '']
 
 for p in posts.find():
 #p = posts.find_one()
   p['comments'] = []
   for i in xrange(0,randrange(20)):
     comment = {}
-    # pick an account	
+    # pick an account
     account = choice(accounts)
     comment['author'] = account['_id']
     comment['date'] = datetime.now()
@@ -28,7 +28,7 @@ for p in posts.find():
     p['comments'].append(comment)
 
   posts.save(p)
-  
+
 
 # print randrange(20)
 # print choice(sents)

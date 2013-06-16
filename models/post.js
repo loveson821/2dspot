@@ -2,8 +2,18 @@ module.exports = function(app, mongoose) {
   var fs = require('fs');
 	var Schema = mongoose.Schema;
 	var ei = require('../plugins/imageProcess.js')(app);
-	var fileUploader = require('../plugins/fileUploader.js')(app);
-	var formidable = require('formidable');
+	// var fileUploader = require('../plugins/fileUploader.js')(app);
+	// var formidable = require('formidable');
+
+	// var ChannelSchema = new Schema({
+	// 	name: {type: String, lowercase: true, unique: true },
+	// 	description: { type: String},
+	// 	createDate: { type: Date, default: Date.now }
+	// });
+
+	// Static var
+	var page_size = 10;
+	var page_size_end = page_size + 1;
 
 	var PostSchema = new mongoose.Schema({
 		title:  String,
@@ -21,11 +31,15 @@ module.exports = function(app, mongoose) {
 			avs:  Number,
 			pv: Number
 		},
-		channel: String
+		channel: {
+			name: {type: String, lowercase: true},
+			description: { type: String},
+			createDate: { type: Date, default: Date.now }
+		}
 	    //contacts:  [Contact],
 	    //status:    [Status], // My own status updates only
 	    //activity:  [Status]  //  All status updates including friends
-	  });
+	});
 
 	PostSchema.methods.rank = function(){
 		t = (this.date - new Date(2013,3,25))/1000;
@@ -44,15 +58,6 @@ module.exports = function(app, mongoose) {
 	    	return console.log("Post created");
   	};
 
-	// var create = function(title, body, author, pic){
-	// 	var post = new Post({
-	// 			title: title,
-	// 			author: author,
-	// 			body: body,
-	// 			pics: [pic]
-	// 	});
-	// 	post.save(createPostCallback);
-	// };
 
 	var create = function(obj, callback){
 		console.log("create function");
@@ -117,47 +122,38 @@ module.exports = function(app, mongoose) {
   		res.send('doc rank is '+ doc.rank());
   	});
   });
-	// var show = function(){
- //    async.parallel([
- //      function(callback){
- //    		Post.find({}).exec(function(err, doc){
- //          callback(null,doc);
- //        });
- //      }],
- //      function(err, results){ console.log(results); });
-	// };
 
 
-	// app.post('/post', function(req, res, next){
-	// 	if( req.files.pic.size ){
-	// 		path = req.files.pic.path;
-	// 		targetPath = path + '.jpg';
-	// 		// fs.rename(path, targetPath, function(err){
-	// 		// 	if(err) throw err;
-	// 		// });
-	// 		fs.renameSync(path, targetPath);
-	// 		req.body.pics = [targetPath];
-	// 		req.body.author = req.user;
-	// 		ei.thumbnails(targetPath, 'undefined',function(err, image){
-	// 			if(err){
-	// 				res.send(err);
-	// 			}else{
-	// 				create(req.body, function(err, post){
-	// 					if( err) throw err;
-	// 					else{
-	// 						res.send(post);
-	// 					}
+	app.post('/post', function(req, res, next){
+		if( req.files.pic.size ){
+			path = req.files.pic.path;
+			targetPath = path + '.jpg';
+			// fs.rename(path, targetPath, function(err){
+			// 	if(err) throw err;
+			// });
+			fs.renameSync(path, targetPath);
+			req.body.pics = [targetPath];
+			req.body.author = req.user;
+			ei.thumbnails(targetPath, 'undefined',function(err, image){
+				if(err){
+					res.send(err);
+				}else{
+					create(req.body, function(err, post){
+						if( err) throw err;
+						else{
+							res.send(post);
+						}
 							
-	// 				});
+					});
 					
-	// 			}
-	// 		});
-	// 	}else{
- //      		fs.unlink(req.files.pic.path);
- //    	}
+				}
+			});
+		}else{
+	  		fs.unlink(req.files.pic.path);
+		}
 		
-		
-	// });
+	});
+
 	// app.post('/post',function(req, res) {
 	//     var form = new formidable.IncomingForm;
 	//     form.keepExtensions = true;
@@ -180,9 +176,9 @@ module.exports = function(app, mongoose) {
 	//     return;
 	// });
 
-	app.post('/post', fileUploader.uploadFile, function(req, res){
-		res.send({'status':33});
-	});
+	// app.post('/post', fileUploader.uploadFile, function(req, res){
+	// 	res.send({'status':33});
+	// });
 
 	app.get('/post', app.ensureAuthenticated, function(req, res){
 		res.render('createpost',{ user: req.user });
@@ -280,7 +276,6 @@ module.exports = function(app, mongoose) {
 		day = req.params.day;
 		channel = req.params.channel;
 		page = req.params.page;
-		page_size = 20;
 
 		start = new Date(year,month,day);
 		end = new Date(year,month,day);
@@ -301,8 +296,8 @@ module.exports = function(app, mongoose) {
 				delete elem.voter_ids;
 				array[index] = elem;
 				elem.comments_len = elem.comments.length;
-				elem.comments_next = elem.comments.length > 20;
-				elem.comments = elem.comments.slice(0,21);
+				elem.comments_next = elem.comments.length > page_size;
+				elem.comments = elem.comments.slice(0,page_size_end);
 				
 			});
 			data.docs.sort(compare);
@@ -320,4 +315,4 @@ module.exports = function(app, mongoose) {
 		create: create
 	};
 
-};
+}

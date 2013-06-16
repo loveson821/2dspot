@@ -58,18 +58,20 @@ var PostSchema = new mongoose.Schema({
     voter_ids: [{ type: Schema.ObjectId, select: false }],
     pics: [ { type: String } ],
     meta: {
-      votes: Number,
+      votes: { type: Number, default: 0 },
       avs:  Number,
       pv: Number
     },
-    channel: String
+    channel: {
+      name: {type: String, lowercase: true},
+      description: { type: String},
+      createDate: { type: Date, default: Date.now }
+    }
+      //contacts:  [Contact],
+      //status:    [Status], // My own status updates only
+      //activity:  [Status]  //  All status updates including friends
+  });
 
-    });
-
-PostSchema.methods.rank = function(){
-	var t = this.date - new Date(2013,4,25);
-	return this.meta.votes;
-};
 
 var Post = mongoose.model('Post', PostSchema);
 
@@ -110,7 +112,7 @@ var FakeAccount = function(){
 		var out = new Array();
 		for(var i=0; i < size; i++) {
 		   tmp = array[i].split(/\s+/)[0];
-		   
+
 		   if( tmp != "")	out.push(tmp);
 		}
 		return out;
@@ -126,7 +128,7 @@ var FakeAccount = function(){
   pho_size = photos.length;
 
 	function RandFirstName(){
-		if( Math.random() > 0.5 ) 
+		if( Math.random() > 0.5 )
 			firstname = ffn[ Math.floor(Math.random()* ffn_size )];
 		else
 			firstname = mfn[ Math.floor(Math.random()* mfn_size )];
@@ -152,8 +154,12 @@ var FakeAccount = function(){
 
 }
 
-var sents = fs.readFileSync("/Users/sin/Dropbox/clean-corpus.en", "utf8").split("\n");
+var sents = fs.readFileSync("/Users/sin/Dropbox/Resources/clean-corpus.en", "utf8").split("\n");
 var sents_size = sents.length;
+
+var randomSent = function(){
+  return sents[Math.floor(mt.rand(sents_size))].replace(/\r|\n/,"");
+};
 
 var createPostCallback = function(err) {
     if (err) {
@@ -164,9 +170,9 @@ var createPostCallback = function(err) {
 
 var mt = require('mersenne');
 var async = require('async');
-var countrys = ['MO','HK','TW'];
+var countrys = ['澳門','Macau','Hong-Kong'];
 var FakePost = function(){
-	
+
 	var account;
 
 	var createOneFakePost = function(){
@@ -180,14 +186,17 @@ var FakePost = function(){
       post.body = "";
 			for( var i = 0; i < body_size; ++i )
 				post.body += sents[Math.floor(mt.rand(sents_size))].replace(/\r|\n/,"");
-			
+
 			post.date = new Date(2013,4,Math.floor(mt.rand(31)));
 			post.pics = [];
-			pic_num = Math.floor(mt.rand(100));
+			pic_num = Math.floor(mt.rand(40)+1);
 			post.pics.push( 'uploads/'+pic_num+'.png');
 			voters_size = Math.floor(mt.rand(201));
 			hotOrCool = Math.random() > 0.5;
-      post.channel = countrys[mt.rand(3)];
+      channel = {}
+      channel.name = countrys[mt.rand(3)];
+      channel.description = randomSent();
+      post.channel = channel;
 			post.meta = {};
 			post.meta.votes = hotOrCool?voters_size*-1:voters_size;
 			Account.find().skip(Math.floor(mt.rand(600))).limit(voters_size).select('_id').exec(function(err, docs){
@@ -195,14 +204,14 @@ var FakePost = function(){
 				Post(post).save(createPostCallback);
 			});
 		});
-	}	
+	}
 
 
  //  series_funcs = [];
 	// for( var i = 0; i < 1000; i++ ){
-    
+
  //      series_funcs.push(createOneFakePost());
-      	
+
 	// }
  //  async.parallel(series_funcs);
   setInterval(function(){
