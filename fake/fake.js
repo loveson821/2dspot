@@ -193,10 +193,11 @@ var FakePost = function(){
 			post.pics.push( 'uploads/'+pic_num+'.png');
 			voters_size = Math.floor(mt.rand(201));
 			hotOrCool = Math.random() > 0.5;
-      channel = {}
-      channel.name = countrys[mt.rand(3)];
-      channel.description = randomSent();
-      post.channel = channel;
+      
+      post.channel = {};
+      post.channel.name = countrys[mt.rand(3)];
+      post.channel.description = randomSent();
+      
 			post.meta = {};
 			post.meta.votes = hotOrCool?voters_size*-1:voters_size;
 			Account.find().skip(Math.floor(mt.rand(600))).limit(voters_size).select('_id').exec(function(err, docs){

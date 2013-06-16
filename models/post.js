@@ -127,14 +127,14 @@ module.exports = function(app, mongoose) {
 	app.post('/post', function(req, res, next){
 		if( req.files.pic.size ){
 			path = req.files.pic.path;
-			targetPath = path + '.jpg';
+			//targetPath = path + '.jpg';
 			// fs.rename(path, targetPath, function(err){
 			// 	if(err) throw err;
 			// });
-			fs.renameSync(path, targetPath);
+			//fs.renameSync(path, targetPath);
 			req.body.pics = [targetPath];
 			req.body.author = req.user;
-			ei.thumbnails(targetPath, 'undefined',function(err, image){
+			ei.thumbnails(path, 'undefined',function(err, image){
 				if(err){
 					res.send(err);
 				}else{
@@ -281,7 +281,7 @@ module.exports = function(app, mongoose) {
 		end = new Date(year,month,day);
 		end.setDate(end.getDate()+1);
 
-		Post.find({date: { $gt: start, $lte :end }, channel: channel})
+		Post.find({date: { $gt: start, $lte :end }, 'channel.name': channel})
 			.populate('author comments.author').exec(function(err, docs){
 			data = {};
 			data.meta = {};
