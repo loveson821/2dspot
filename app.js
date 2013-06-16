@@ -24,6 +24,12 @@ app.sessionStore = new MemoryStore();       // Create a session store to share b
 
 //Configurations
 var config = {
+  redis : {
+    host: 'pub-redis-13685.us-east-1-2.2.ec2.garantiadata.com',
+    pass: '2dspot',
+    port: 13685
+  },
+
   logFile: fs.createWriteStream('./myLogFile.log', {flags: 'a'}), //use {flags: 'w'} to open in write mode
   logger: new (winston.Logger)({
     transports: [
@@ -87,9 +93,13 @@ fs.readdirSync('routes').forEach(function(file) {
 });
 */
 
+// Model needs plugins
+app.redis = require('./plugins/redis')(app, config);
+
 // Import the models
 var models = {
   Account: require('./models/Account')(app, config, mongoose, nodemailer),
+  Channel: require('./models/channel')(app, mongoose),
   Post: require('./models/post')(app, mongoose)
   //Comment: require('./models/comment')(app, mongoose)
 };

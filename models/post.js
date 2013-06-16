@@ -2,14 +2,9 @@ module.exports = function(app, mongoose) {
   var fs = require('fs');
 	var Schema = mongoose.Schema;
 	var ei = require('../plugins/imageProcess.js')(app);
+	var redis = app.redis;
 	// var fileUploader = require('../plugins/fileUploader.js')(app);
 	// var formidable = require('formidable');
-
-	// var ChannelSchema = new Schema({
-	// 	name: {type: String, lowercase: true, unique: true },
-	// 	description: { type: String},
-	// 	createDate: { type: Date, default: Date.now }
-	// });
 
 	// Static var
 	var page_size = 10;
@@ -31,11 +26,7 @@ module.exports = function(app, mongoose) {
 			avs:  Number,
 			pv: Number
 		},
-		channel: {
-			name: {type: String, lowercase: true},
-			description: { type: String},
-			createDate: { type: Date, default: Date.now }
-		}
+		channel: {type: Schema.ObjectId, ref: 'Channel'}
 	    //contacts:  [Contact],
 	    //status:    [Status], // My own status updates only
 	    //activity:  [Status]  //  All status updates including friends
@@ -281,7 +272,12 @@ module.exports = function(app, mongoose) {
 		end = new Date(year,month,day);
 		end.setDate(end.getDate()+1);
 
-		Post.find({date: { $gt: start, $lte :end }, 'channel.name': channel})
+		Post.find({date: { $gt: start, $lte :end }})
+			.populate({
+				path: 'channel', 
+				match: { name : channel },
+				select: 'name'
+			})
 			.populate('author comments.author').exec(function(err, docs){
 			data = {};
 			data.meta = {};

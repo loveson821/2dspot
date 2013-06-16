@@ -13,6 +13,26 @@ db.once('open', function callback () {
 	console.log('Connected to DB');
 });
 
+var Schema = mongoose.Schema;
+
+var ChannelSchema = new Schema({
+    name: {type: String, lowercase: true, unique: true },
+    description: { type: String},
+    createDate: { type: Date, default: Date.now }
+  });
+
+ChannelSchema.statics.random = function(callback) {
+  this.count(function(err, count) {
+    if (err) {
+      return callback(err);
+    }
+    var rand = Math.floor(Math.random() * count);
+    this.findOne().skip(rand).exec(callback);
+  }.bind(this));
+};
+
+var Channel = mongoose.model('Channel', ChannelSchema);
+
 
 var AccountSchema = new mongoose.Schema({
     email:     { type: String, unique: true },
@@ -44,7 +64,7 @@ return console.log('Account was created');
 };
 
 
-var Schema = mongoose.Schema;
+
 
 var PostSchema = new mongoose.Schema({
     title:  String,
@@ -62,11 +82,7 @@ var PostSchema = new mongoose.Schema({
       avs:  Number,
       pv: Number
     },
-    channel: {
-      name: {type: String, lowercase: true},
-      description: { type: String},
-      createDate: { type: Date, default: Date.now }
-    }
+    channel: {type: Schema.ObjectId, ref: 'Channel'}
       //contacts:  [Contact],
       //status:    [Status], // My own status updates only
       //activity:  [Status]  //  All status updates including friends
@@ -170,7 +186,19 @@ var createPostCallback = function(err) {
 
 var mt = require('mersenne');
 var async = require('async');
-var countrys = ['澳門','Macau','Hong-Kong'];
+
+var FakeChannel = function(){
+  var countrys = ['澳門','Macau','Hong-Kong'];
+  for( i in countrys ){
+    Channel.create({
+      name: countrys[i],
+      description: randomSent()
+    }, function(err, doc){
+      console.log(countrys[i] + 'created');
+    });
+  }
+}
+
 var FakePost = function(){
 
 	var account;
@@ -194,16 +222,21 @@ var FakePost = function(){
 			voters_size = Math.floor(mt.rand(201));
 			hotOrCool = Math.random() > 0.5;
       
-      post.channel = {};
-      post.channel.name = countrys[mt.rand(3)];
-      post.channel.description = randomSent();
+      Channel.random(function(err, cha){
+        post.channel = cha;
+        post.meta = {};
+        post.meta.votes = hotOrCool?voters_size*-1:voters_size;
+        Account.find().skip(Math.floor(mt.rand(600))).limit(voters_size).select('_id').exec(function(err, docs){
+          post.voter_ids = docs;
+          Post(post).save(createPostCallback);
+        });
+      });
+
+      // post.channel = {};
+      // post.channel.name = countrys[mt.rand(3)];
+      // post.channel.description = randomSent();
       
-			post.meta = {};
-			post.meta.votes = hotOrCool?voters_size*-1:voters_size;
-			Account.find().skip(Math.floor(mt.rand(600))).limit(voters_size).select('_id').exec(function(err, docs){
-				post.voter_ids = docs;
-				Post(post).save(createPostCallback);
-			});
+			
 		});
 	}
 
@@ -225,4 +258,5 @@ var FakePost = function(){
 
 
 //FakeAccount();
+//FakeChannel();
 FakePost();
