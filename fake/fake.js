@@ -188,13 +188,13 @@ var mt = require('mersenne');
 var async = require('async');
 
 var FakeChannel = function(){
-  var countrys = ['澳門','Macau','Hong-Kong'];
+  var countrys = fs.readFileSync('countryList.txt').toString().split("\n");
   for( i in countrys ){
     Channel.create({
       name: countrys[i],
       description: randomSent()
     }, function(err, doc){
-      console.log(countrys[i] + 'created');
+      console.log(doc.name);
     });
   }
 }
@@ -217,8 +217,8 @@ var FakePost = function(){
 
 			post.date = new Date(2013,4,Math.floor(mt.rand(31)));
 			post.pics = [];
-			pic_num = Math.floor(mt.rand(40)+1);
-			post.pics.push( 'uploads/'+pic_num+'.png');
+			pic_num = Math.floor(mt.rand(57)+1);
+			post.pics.push( 'uploads/'+pic_num+'.jpg');
 			voters_size = Math.floor(mt.rand(201));
 			hotOrCool = Math.random() > 0.5;
       
@@ -258,5 +258,5 @@ var FakePost = function(){
 
 
 //FakeAccount();
-//FakeChannel();
-FakePost();
+FakeChannel();
+//FakePost();
