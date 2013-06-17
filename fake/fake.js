@@ -258,5 +258,5 @@ var FakePost = function(){
 
 
 //FakeAccount();
-FakeChannel();
-//FakePost();
+//FakeChannel();
+FakePost();

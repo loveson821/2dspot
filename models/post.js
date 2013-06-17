@@ -6,10 +6,6 @@ module.exports = function(app, mongoose) {
 	// var fileUploader = require('../plugins/fileUploader.js')(app);
 	// var formidable = require('formidable');
 
-	// Static var
-	var page_size = 10;
-	var page_size_end = page_size + 1;
-
 	var PostSchema = new mongoose.Schema({
 		title:  String,
 		author: {type: Schema.ObjectId, ref: 'Account'},
@@ -221,23 +217,40 @@ module.exports = function(app, mongoose) {
 		});
 	});
 
-	app.get('/posts/:p?', function(req, res){
-		page = req.params.p != 'undefined' ? req.params.p : 0;
-		//channel = req.user.channel != 'undefined' ? req.user.channel : null;
-		page_size = 100;
-		Post.find({}).sort('-date').skip(page_size*page).limit(page_size)
-			.populate('author comments.author').exec(function(err, docs){
-			docs.forEach(function(elem, index, array){
-				score = elem.rank();
-				elem = elem.toObject();
-				elem.score = score;
-				delete elem.voter_ids;
-				array[index] = elem;
+	// app.get('/posts/:p?', function(req, res){
+	// 	page = req.params.p != 'undefined' ? req.params.p : 0;
+	// 	//channel = req.user.channel != 'undefined' ? req.user.channel : null;
+	// 	page_size = 100;
+	// 	Post.find({}).sort('-date').skip(page_size*page).limit(page_size)
+	// 		.populate('author comments.author').exec(function(err, docs){
+	// 		docs.forEach(function(elem, index, array){
+	// 			score = elem.rank();
+	// 			elem = elem.toObject();
+	// 			elem.score = score;
+	// 			delete elem.voter_ids;
+	// 			array[index] = elem;
 				
+	// 		});
+
+	// 		res.send(docs.sort(compare));
+
+	// 	});
+	// });
+
+	app.get('/posts/all/:channel',function(req, res){
+		
+	});
+
+	app.get('/posts/meta', function(req, res){
+		Post.find({})
+			.populate('channel').exec(function(err, docs){
+			data = {};
+
+			docs.forEach(function(elem, index, array){
+				data[elem.channel.name] = (data[elem.channel.name] ? data[elem.channel.name] : 0) + 1;
 			});
 
-			res.send(docs.sort(compare));
-
+			res.send(data);
 		});
 	});
 
@@ -249,11 +262,11 @@ module.exports = function(app, mongoose) {
 		end = new Date(year,month,day);
 		end.setDate(end.getDate()+1);
 
-		Post.find({date: { $gt: start, $lte :end }}).select("channel")
-			.populate('author comments.author').exec(function(err, docs){
+		Post.find({date: { $gt: start, $lte :end }})
+			.populate('channel','name').exec(function(err, docs){
 			data = {};
 			docs.forEach(function(elem, index, array){
-				data[elem.channel] = (data[elem.channel] ? data[elem.channel] : 0) + 1;
+				data[elem.channel.name] = (data[elem.channel.name] ? data[elem.channel.name] : 0) + 1;
 			});
 
 			res.send(data);
@@ -265,8 +278,10 @@ module.exports = function(app, mongoose) {
 		year = req.params.year;
 		month = req.params.month - 1;
 		day = req.params.day;
-		channel = req.params.channel;
+		channel = req.params.channel.replace('-',' ');
 		page = req.params.page;
+		page_size = 10;
+		page_size_end = page_size + 1;
 
 		start = new Date(year,month,day);
 		end = new Date(year,month,day);

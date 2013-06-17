@@ -1,5 +1,5 @@
 module.exports = function(app, mongoose) {
-
+	var async = require('async');
 
 	var ChannelSchema = new mongoose.Schema({
 		name: {type: String, lowercase: true, unique: true },
@@ -17,10 +17,17 @@ module.exports = function(app, mongoose) {
 	  return 0;
 	};
 
-	var outputFilter = function(x){
+	var suggestOutputFilter = function(x){
 		delete x.ra;
 		delete x.__v;
 		return x;
+	};
+
+	var normalFilter = function(x){
+		y = {}
+		y._id = x._id;
+		y.name = x.name;
+		return y;
 	};
 
 	var getSuggestion = function( num, callback){
@@ -32,20 +39,10 @@ module.exports = function(app, mongoose) {
 			});
 
 			docs = docAll.sort( RAcomparator).slice(0,num);
-			docs = docs.map(outputFilter);
-			callback(err, docs);
+			//docs = docs.map(outputFilter);
+			callback(err, docs.map(suggestOutputFilter));
 		});
 
-		// Channel.find({ RA: { $gte: seek } }). limit( num ).exec(function(err, docs){
-		// 	if( docs.length < num ){
-		// 		Channel.find({ RA: { $lt: seek }}). limit( num - docs.length).exec(function(err, docDown){
-		// 			docs.push.apply(docs, docDown);
-		// 			callback(err, docs);
-		// 		});
-		// 	}
-		// 	else
-		// 		callback(err, docs);
-		// });
 	};
 
 	var create = function(channelobj, callback){
@@ -66,7 +63,19 @@ module.exports = function(app, mongoose) {
 
 	app.get('/channels', function(req, res){
 		Channel.find({}).exec(function(err ,docs){
-			res.send(docs);
+			// outputFilterAsync( docs, function( result ){
+			// 	res.send(result);
+			// });
+			
+
+			res.send(docs.map(normalFilter));
+			
+		});
+	});
+
+	app.get('/channel/:id', function(req, res){
+		Channel.find({_id: req.params.id}).exec(function(err, doc){
+			res.send(doc);
 		});
 	});
 
