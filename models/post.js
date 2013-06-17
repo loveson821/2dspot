@@ -49,9 +49,15 @@ module.exports = function(app, mongoose) {
 
 	var create = function(obj, callback){
 		console.log("create function");
-		var post = new Post(obj);
-		post.save(function(err){
-			callback(err, post);
+		Channel.findOne({name: obj.channel}).select('_id').lean().exec(function(err, doc){
+			obj.channel = doc._id;
+			// console.log(doc);
+			// console.log(obj);
+			var post = new Post(obj);
+			console.log(post);
+			post.save(function(err){
+				callback(err, post);
+			});
 		});
 	};
 
@@ -120,7 +126,7 @@ module.exports = function(app, mongoose) {
 			// 	if(err) throw err;
 			// });
 			//fs.renameSync(path, targetPath);
-			req.body.pics = [targetPath];
+			req.body.pics = [path];
 			req.body.author = req.user;
 			ei.thumbnails(path, 'undefined',function(err, image){
 				if(err){

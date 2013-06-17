@@ -31,9 +31,9 @@ module.exports = function(app, mongoose) {
 	};
 
 	var getSuggestion = function( num, callback){
-		Channel.find({}).exec(function(err, docAll){
+		Channel.find({}).lean().exec(function(err, docAll){
 			docAll.forEach(function(elem, index, array){
-				elem = elem.toObject();
+				
 				elem.ra = Math.random();
 				array[index] = elem;
 			});
