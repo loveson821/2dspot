@@ -296,6 +296,7 @@ module.exports = function(app, mongoose) {
 		end.setDate(end.getDate()+1);
 
 		Channel.findOne({ name: channel}).exec(function(err, cha){
+			if( err || !cha ) { res.send({ 'status': 404 }); }
 			Post.find({date: { $gt: start, $lte :end }, channel: cha._id})
 				.populate({
 					path: 'channel', 
@@ -303,7 +304,7 @@ module.exports = function(app, mongoose) {
 					select: 'name'
 				})
 				.populate('author comments.author').exec(function(err, docs){
-					if(err) throw err;
+					if(err || !docs) { res.send({ 'status': 404 }); }
 					if(docs.length == 0){ console.log('should load redis data');}
 					data = {};
 					data.meta = {};

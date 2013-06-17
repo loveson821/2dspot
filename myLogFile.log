@@ -8340,3 +8340,4 @@
 127.0.0.1 - - [Mon, 17 Jun 2013 13:33:40 GMT] "POST /post HTTP/1.1" 200 370 "http://localhost:3000/post" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36"
 127.0.0.1 - - [Mon, 17 Jun 2013 13:33:51 GMT] "GET /posts HTTP/1.1" 200 88781 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36"
 127.0.0.1 - - [Mon, 17 Jun 2013 13:34:04 GMT] "GET /posts/2013/6/17/macao/1 HTTP/1.1" 200 765 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36"
+127.0.0.1 - - [Mon, 17 Jun 2013 16:45:59 GMT] "GET /posts/2013/6/17/macau/1 HTTP/1.1" 200 19 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36"
