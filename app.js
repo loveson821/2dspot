@@ -97,12 +97,18 @@ fs.readdirSync('routes').forEach(function(file) {
 app.redis = require('./plugins/redis')(app, config);
 
 // Import the models
-var models = {
-  Account: require('./models/Account')(app, config, mongoose, nodemailer),
-  Channel: require('./models/channel')(app, mongoose),
-  Post: require('./models/post')(app, mongoose)
-  //Comment: require('./models/comment')(app, mongoose)
-};
+// app.models = {
+//   Account: require('./models/Account')(app, config, mongoose, nodemailer),
+//   Channel: require('./models/channel')(app, mongoose),
+//   Post: require('./models/post')(app, mongoose)
+//   //Comment: require('./models/comment')(app, mongoose)
+// };
+
+
+app.models = {}
+app.models.Account = require('./models/Account')(app, config, mongoose, nodemailer);
+app.models.Channel = require('./models/channel')(app, mongoose);
+app.models.Post = require('./models/post')(app, mongoose)
 
 //models.Account.register("loveson821@gmail.com","123","Ng","Ka Long");
 
@@ -134,8 +140,8 @@ app.get('/logout', function(req, res){
   res.redirect('/');
 });
 
-require('./plugins/pass.js')(app,passport,LocalStrategy,models.Account);
-require('./plugins/pass-facebook.js')(app, passport, FacebookStrategy, models.Account);
+require('./plugins/pass.js')(app,passport,LocalStrategy, app.models.Account);
+require('./plugins/pass-facebook.js')(app, passport, FacebookStrategy, app.models.Account);
 
 //app.listen(3000);
 

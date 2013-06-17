@@ -63,13 +63,7 @@ module.exports = function(app, mongoose) {
 
 	app.get('/channels', function(req, res){
 		Channel.find({}).exec(function(err ,docs){
-			// outputFilterAsync( docs, function( result ){
-			// 	res.send(result);
-			// });
-			
-
 			res.send(docs.map(normalFilter));
-			
 		});
 	});
 

@@ -3,6 +3,7 @@ module.exports = function(app, mongoose) {
 	var Schema = mongoose.Schema;
 	var ei = require('../plugins/imageProcess.js')(app);
 	var redis = app.redis;
+	var Channel = mongoose.model('Channel');
 	// var fileUploader = require('../plugins/fileUploader.js')(app);
 	// var formidable = require('formidable');
 
@@ -217,28 +218,29 @@ module.exports = function(app, mongoose) {
 		});
 	});
 
-	// app.get('/posts/:p?', function(req, res){
-	// 	page = req.params.p != 'undefined' ? req.params.p : 0;
-	// 	//channel = req.user.channel != 'undefined' ? req.user.channel : null;
-	// 	page_size = 100;
-	// 	Post.find({}).sort('-date').skip(page_size*page).limit(page_size)
-	// 		.populate('author comments.author').exec(function(err, docs){
-	// 		docs.forEach(function(elem, index, array){
-	// 			score = elem.rank();
-	// 			elem = elem.toObject();
-	// 			elem.score = score;
-	// 			delete elem.voter_ids;
-	// 			array[index] = elem;
+	app.get('/posts', function(req, res){
+		//page = req.params.p != 'undefined' ? req.params.p : 0;
+		//channel = req.user.channel != 'undefined' ? req.user.channel : null;
+		page = 0;
+		page_size = 100;
+		Post.find({}).sort('-date').skip(page_size*page).limit(page_size)
+			.populate('author comments.author').exec(function(err, docs){
+			docs.forEach(function(elem, index, array){
+				score = elem.rank();
+				elem = elem.toObject();
+				elem.score = score;
+				delete elem.voter_ids;
+				array[index] = elem;
 				
-	// 		});
+			});
 
-	// 		res.send(docs.sort(compare));
+			res.send(docs.sort(compare));
 
-	// 	});
-	// });
+		});
+	});
 
 	app.get('/posts/all/:channel',function(req, res){
-		
+
 	});
 
 	app.get('/posts/meta', function(req, res){
@@ -287,35 +289,42 @@ module.exports = function(app, mongoose) {
 		end = new Date(year,month,day);
 		end.setDate(end.getDate()+1);
 
-		Post.find({date: { $gt: start, $lte :end }})
-			.populate({
-				path: 'channel', 
-				match: { name : channel },
-				select: 'name'
-			})
-			.populate('author comments.author').exec(function(err, docs){
-			data = {};
-			data.meta = {};
-			data.meta.count = docs.length;
-			data.meta.next = data.meta.count - page*page_size > 0;
-			data.docs = docs;
+		Channel.findOne({ name: channel}).exec(function(err, cha){
+			Post.find({date: { $gt: start, $lte :end }, channel: cha._id})
+				.populate({
+					path: 'channel', 
+					match: { name : channel },
+					select: 'name'
+				})
+				.populate('author comments.author').exec(function(err, docs){
+					if(err) throw err;
+					if(docs.length == 0){ console.log('should load redis data');}
+					data = {};
+					data.meta = {};
+					data.meta.count = docs.length;
+					data.meta.next = data.meta.count - page*page_size > 0;
+					data.docs = docs;
 
-			data.docs.forEach(function(elem, index, array){
-				score = elem.rank();
-				elem = elem.toObject();
-				elem.score = score;
-				delete elem.voter_ids;
-				array[index] = elem;
-				elem.comments_len = elem.comments.length;
-				elem.comments_next = elem.comments.length > page_size;
-				elem.comments = elem.comments.slice(0,page_size_end);
-				
+					data.docs.forEach(function(elem, index, array){
+						score = elem.rank();
+						elem = elem.toObject();
+						elem.score = score;
+						delete elem.voter_ids;
+						array[index] = elem;
+						elem.comments_len = elem.comments.length;
+						elem.comments_next = elem.comments.length > page_size;
+						elem.comments = elem.comments.slice(0,page_size_end);
+						
+					});
+					data.docs.sort(compare);
+					data.docs = docs.slice((page-1)*page_size, page*page_size);
+
+					res.send(data);
 			});
-			data.docs.sort(compare);
-			data.docs = docs.slice((page-1)*page_size, page*page_size);
 
-			res.send(data);
 		});
+
+		
 		
 		
 	});
