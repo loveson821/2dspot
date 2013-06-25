@@ -202,7 +202,6 @@ module.exports = function(app, config, mongoose, nodemailer) {
     });
   };
 
-
   app.get('/account', app.ensureAuthenticated, function(req, res){
     res.send(req.user);
   });
@@ -233,6 +232,52 @@ module.exports = function(app, config, mongoose, nodemailer) {
     });
   });
 
+  // add subscribe
+  app.post('/account/subscribe/:cid', app.ensureAuthenticated, function(req, res){ 
+    Account.findOne({_id: req.user._id}).exec(function(err, acc){
+      if( acc.subscribes.indexOf(req.params.cid) == -1 ){
+        acc.subscribes.push(req.params.cid);
+        acc.save(acc, function(err, doc){
+          if(err) res.send({'status': 400});
+          if(doc) res.send(doc);
+        });
+      }
+      else{
+        res.send({'status': 200});
+      }
+    });
+    
+  });
+  
+  // remove subscribe
+  app.delete('/account/subscribe/:cid', app.ensureAuthenticated, function(req, res){
+    Account.findOne({_id: req.user._id}).exec(function(err, acc){
+      if( acc.subscribes.indexOf(req.params.cid) == -1 ){
+        res.send({'status':400});
+      }
+      else{
+        index = acc.subscribes.indexOf(channel);
+        acc.subscribes.splice(index,index);
+        acc.save(acc, function(err, doc){
+          if(err) res.send({'status': 400});
+          if(doc) res.send(doc);
+        });
+        
+      }
+    });
+  });
+  
+  // check subscribe
+  app.get('/account/subscribe/:cid', app.ensureAuthenticated, function(req, res){
+    Account.findOne({_id: req.user._id}).exec(function(err, acc){
+      if( acc.subscribes.indexOf(req.params.cid) == -1 ){
+        res.send({'status': false});
+      }else{
+        res.send({'status': true});
+      }
+    });
+  });
+  
 
   return {
     findById: findById,
