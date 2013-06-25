@@ -4,6 +4,7 @@ module.exports = function(app, mongoose) {
 	var ei = require('../plugins/imageProcess.js')(app);
 	var redis = app.redis;
 	var Channel = mongoose.model('Channel');
+
 	// var fileUploader = require('../plugins/fileUploader.js')(app);
 	// var formidable = require('formidable');
 
@@ -28,6 +29,14 @@ module.exports = function(app, mongoose) {
 	    //status:    [Status], // My own status updates only
 	    //activity:  [Status]  //  All status updates including friends
 	});
+  
+  PostSchema.pre('save', function(next) {
+
+    if (!validatePresenceOf(this.channel))
+      next(new Error('Invalid channel'))
+    else
+      next()
+  })
 
 	PostSchema.methods.rank = function(){
 		t = (this.date - new Date(2013,3,25))/1000;
@@ -261,6 +270,12 @@ module.exports = function(app, mongoose) {
 			res.send(data);
 		});
 	});
+  
+  app.get('/posts/mine', app.ensureAuthenticated, function(req, res){
+    Post.find({author: req.user}).exec(function(err, docs){
+      res.send(docs);
+    });
+  });
 
 	app.get('/posts/meta/:year/:month/:day', function(req, res){
 		year = req.params.year;
@@ -297,37 +312,40 @@ module.exports = function(app, mongoose) {
 
 		Channel.findOne({ name: channel}).exec(function(err, cha){
 			if( err || !cha ) { res.send({ 'status': 404 }); }
-			Post.find({date: { $gt: start, $lte :end }, channel: cha._id})
-				.populate({
-					path: 'channel', 
-					match: { name : channel },
-					select: 'name'
-				})
-				.populate('author comments.author').exec(function(err, docs){
-					if(err || !docs) { res.send({ 'status': 404 }); }
-					if(docs.length == 0){ console.log('should load redis data');}
-					data = {};
-					data.meta = {};
-					data.meta.count = docs.length;
-					data.meta.next = data.meta.count - page*page_size > 0;
-					data.docs = docs;
+      else{
+  			Post.find({date: { $gt: start, $lte :end }, channel: cha._id})
+  				.populate({
+  					path: 'channel', 
+  					match: { name : channel },
+  					select: 'name'
+  				})
+  				.populate('author comments.author').exec(function(err, docs){
+  					if(err || !docs) { res.send({ 'status': 404 }); }
+  					if(docs.length == 0){ console.log('should load redis data');}
+  					data = {};
+  					data.meta = {};
+  					data.meta.count = docs.length;
+  					data.meta.next = data.meta.count - page*page_size > 0;
+  					data.docs = docs;
 
-					data.docs.forEach(function(elem, index, array){
-						score = elem.rank();
-						elem = elem.toObject();
-						elem.score = score;
-						delete elem.voter_ids;
-						array[index] = elem;
-						elem.comments_len = elem.comments.length;
-						elem.comments_next = elem.comments.length > page_size;
-						elem.comments = elem.comments.slice(0,page_size_end);
+  					data.docs.forEach(function(elem, index, array){
+  						score = elem.rank();
+  						elem = elem.toObject();
+  						elem.score = score;
+  						delete elem.voter_ids;
+  						array[index] = elem;
+  						elem.comments_len = elem.comments.length;
+  						elem.comments_next = elem.comments.length > page_size;
+  						elem.comments = elem.comments.slice(0,page_size_end);
 						
-					});
-					data.docs.sort(compare);
-					data.docs = docs.slice((page-1)*page_size, page*page_size);
+  					});
+  					data.docs.sort(compare);
+  					data.docs = docs.slice((page-1)*page_size, page*page_size);
 
-					res.send(data);
-			});
+  					res.send(data);
+  			});
+      }
+			
 
 		});
 

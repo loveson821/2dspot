@@ -8341,3 +8341,7 @@
 127.0.0.1 - - [Mon, 17 Jun 2013 13:33:51 GMT] "GET /posts HTTP/1.1" 200 88781 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36"
 127.0.0.1 - - [Mon, 17 Jun 2013 13:34:04 GMT] "GET /posts/2013/6/17/macao/1 HTTP/1.1" 200 765 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36"
 127.0.0.1 - - [Mon, 17 Jun 2013 16:45:59 GMT] "GET /posts/2013/6/17/macau/1 HTTP/1.1" 200 19 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36"
+127.0.0.1 - - [Tue, 25 Jun 2013 09:20:27 GMT] "GET /posts HTTP/1.1" 304 - "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36"
+127.0.0.1 - - [Tue, 25 Jun 2013 09:20:38 GMT] "GET / HTTP/1.1" 200 365 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36"
+127.0.0.1 - - [Tue, 25 Jun 2013 09:20:42 GMT] "POST /login HTTP/1.1" 200 33 "http://localhost:3000/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36"
+127.0.0.1 - - [Tue, 25 Jun 2013 09:20:47 GMT] "GET /posts/mine HTTP/1.1" 200 11949 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36"
