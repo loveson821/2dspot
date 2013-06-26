@@ -27,6 +27,7 @@ module.exports = function(app, mongoose) {
 		y = {}
 		y._id = x._id;
 		y.name = x.name;
+    y.description = x.description;
 		return y;
 	};
 
@@ -61,9 +62,16 @@ module.exports = function(app, mongoose) {
 		});
 	});
 
-	app.get('/channels', function(req, res){
+	app.get('/channels/:page?', function(req, res){
+    data = {}
+    page_size = 10;
+    page = req.params.page || 1;
 		Channel.find({}).exec(function(err ,docs){
-			res.send(docs.map(normalFilter));
+			data.meta = {};
+			data.meta.count = docs.length;
+			data.meta.next = data.meta.count - page*page_size > 0;
+      data.channels = docs.map(normalFilter).slice((page-1)*page_size, page*page_size);
+			res.send(data);
 		});
 	});
 

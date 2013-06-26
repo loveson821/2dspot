@@ -8375,3 +8375,7 @@
 127.0.0.1 - - [Tue, 25 Jun 2013 15:10:42 GMT] "GET / HTTP/1.1" 200 365 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36"
 127.0.0.1 - - [Tue, 25 Jun 2013 15:10:45 GMT] "POST /login HTTP/1.1" 200 33 "http://localhost:3000/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36"
 127.0.0.1 - - [Tue, 25 Jun 2013 15:10:50 GMT] "GET /account/subscribe/51be977cef5cea67c700007d HTTP/1.1" 200 20 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36"
+127.0.0.1 - - [Wed, 26 Jun 2013 09:31:05 GMT] "GET /channels HTTP/1.1" 304 - "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36"
+127.0.0.1 - - [Wed, 26 Jun 2013 09:31:06 GMT] "GET /channels HTTP/1.1" 304 - "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36"
+127.0.0.1 - - [Wed, 26 Jun 2013 09:32:03 GMT] "GET /channels HTTP/1.1" 200 37883 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36"
+127.0.0.1 - - [Wed, 26 Jun 2013 09:35:53 GMT] "GET /channels HTTP/1.1" 200 1772 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36"
