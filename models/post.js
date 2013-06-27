@@ -32,8 +32,11 @@ module.exports = function(app, mongoose) {
   
   PostSchema.pre('save', function(next) {
 
-    if (!validatePresenceOf(this.channel))
+    if (!this.channel){
+      console.log(this.channel)
       next(new Error('Invalid channel'))
+    }
+      
     else
       next()
   })
