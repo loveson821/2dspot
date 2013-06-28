@@ -4,4 +4,9 @@ get '/post/:id/up'
 get '/post/:id'
 
 post '/post'
-post '/post/:id'  --- add comment
+post '/post/:id'      -- add comment
+
+get '/account'        -- show login user
+get '/account/create' -- create user ( web )
+post '/account'       -- create user ( api )
+ 

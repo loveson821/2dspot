@@ -130,7 +130,7 @@ module.exports = function(app, mongoose) {
   });
 
 
-	app.post('/post', function(req, res, next){
+	app.post('/post', app.ensureAuthenticated, function(req, res, next){
 		if( req.files.pic.size ){
 			path = req.files.pic.path;
 			//targetPath = path + '.jpg';
@@ -138,7 +138,7 @@ module.exports = function(app, mongoose) {
 			// 	if(err) throw err;
 			// });
 			//fs.renameSync(path, targetPath);
-			req.body.pics = [path];
+			req.body.pics = [path.slice(6)];
 			req.body.author = req.user;
 			ei.thumbnails(path, 'undefined',function(err, image){
 				if(err){

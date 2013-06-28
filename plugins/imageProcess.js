@@ -56,7 +56,6 @@ module.exports = function(app) {
 
   //queue scope
   var q = async.queue(function (task, callback) {
-    console.log('hello ' + task.srcPath);
     createThumbnail(task.srcPath, task.dst, function(err, image){
         callback(err,image);
     });

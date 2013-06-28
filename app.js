@@ -167,10 +167,7 @@ app.use(function(err, req, res, next){
 
 // assume 404 since no middleware responded
 app.use(function(req, res, next){
-  res.status(404).render('404', {
-    url: req.originalUrl,
-    error: 'Not found'
-  })
+  res.status(404).send({'status':404})
 })
 
 module.exports = app;

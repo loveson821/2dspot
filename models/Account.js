@@ -24,7 +24,7 @@ module.exports = function(app, config, mongoose, nodemailer) {
     email:     { type: String, lowercase: true, unique: true },
     password:  { type: String, select: false },
     photoUrl:  { type: String },
-    name: { type: String },
+    name: { type: String, unique: true },
     country: { type: String},
     subscribes: [{ type: String }]
     // name: {
