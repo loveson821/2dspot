@@ -8432,3 +8432,4 @@
 127.0.0.1 - - [Fri, 28 Jun 2013 16:57:42 GMT] "POST /login HTTP/1.1" 200 33 "http://localhost:3000/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36"
 127.0.0.1 - - [Fri, 28 Jun 2013 16:57:45 GMT] "GET /post HTTP/1.1" 200 477 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36"
 127.0.0.1 - - [Fri, 28 Jun 2013 16:57:55 GMT] "POST /post HTTP/1.1" 200 361 "http://localhost:3000/post" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36"
+127.0.0.1 - - [Fri, 28 Jun 2013 17:07:10 GMT] "GET /post HTTP/1.1" 403 39 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36"
