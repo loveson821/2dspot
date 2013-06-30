@@ -21,7 +21,7 @@ module.exports = function(app, config, mongoose, nodemailer) {
   };
 
   var AccountSchema = new mongoose.Schema({
-    email:     { type: String, lowercase: true, unique: true },
+    email:     { type: String, lowercase: true, unique: true, required: true },
     password:  { type: String, select: false },
     photoUrl:  { type: String },
     name: { type: String, unique: true },
@@ -41,7 +41,7 @@ module.exports = function(app, config, mongoose, nodemailer) {
     //contacts:  [Contact],
     //status:    [Status], // My own status updates only
     //activity:  [Status]  //  All status updates including friends
-  });
+  },{safe: true});
 
   var Account = mongoose.model('Account', AccountSchema);
 
@@ -164,7 +164,7 @@ module.exports = function(app, config, mongoose, nodemailer) {
     });
   };
 
-  var localRegister = function(email, password, firstName, lastName, callback) {
+  var localRegister = function(email, password, name, callback) {
     var password;
     if( password){
       shaSum = crypto.createHash('sha256');
@@ -178,7 +178,7 @@ module.exports = function(app, config, mongoose, nodemailer) {
     console.log('Registering ' + email);
     var user = new Account({
       email: email,
-      name: firstName + ' ' + lastName,
+      name: name,
       password: password,
       photoUrl: gravatar.url(email, {s: '100', d: 'mm'})
     });
@@ -225,10 +225,12 @@ module.exports = function(app, config, mongoose, nodemailer) {
       return;
     }
 
-    localRegister(req.body.email, req.body.password, req.body.firstname,req.body.lastName, function(err, account){
-      if(err) res.send('Unexpected error', 500);
-      console.log('Save command was sent');
-      res.redirect('/account');
+    localRegister(req.body.email, req.body.password, req.body.name , function(err, account){
+      if(err) res.send('Unexpected error, maybe duplicated name or email', 500)
+      else{
+        console.log('Save command was sent')
+        res.status(200).send({'success':true})
+      }
     });
   });
 

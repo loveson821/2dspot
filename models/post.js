@@ -208,7 +208,7 @@ module.exports = function(app, mongoose) {
 		});
 	});
 
-	app.post('/post/:id',function(req,res){
+	app.post('/post/:id/comments', app.ensureAuthenticated, function(req,res){
 		if( req.body ){
 
 			com = req.body;
@@ -216,6 +216,7 @@ module.exports = function(app, mongoose) {
 			com.author = req.user;
 			addComment( req.params.id, com , res, function(res){
 				res.redirect('/post/'+req.params.id);
+        res.status(200).send({"success": true})
 			});
 
 		}

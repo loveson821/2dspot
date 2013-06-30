@@ -72,7 +72,9 @@ app.configure(function(){
   mongoose.connect(dbPath, function onMongooseError(err) {
       if (err) throw err;
   });
-
+  
+  mongoose.set('debug', true);
+  
   var db = mongoose.connection;
   //db.on('error', console.error.bind(console, 'connection error:'));
   db.once('open', function callback () {

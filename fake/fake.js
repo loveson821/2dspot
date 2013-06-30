@@ -35,14 +35,29 @@ var Channel = mongoose.model('Channel', ChannelSchema);
 
 
 var AccountSchema = new mongoose.Schema({
-    email:     { type: String, unique: true },
-    password:  { type: String, select: false },
-    photoUrl:  { type: String },
-    name: { type: String },
-    country: { type: String},
-    subscribes: [{ type: String }]
+  email:     { type: String, lowercase: true, unique: true, required: true, trim: true },
+  password:  { type: String, select: false },
+  photoUrl:  { type: String },
+  name: { type: String, unique: true },
+  country: { type: String},
+  subscribes: [{ type: String }]
+  // name: {
+  //   first:   { type: String },
+  //   last:    { type: String },
+  //   full:    { type: String }
+  // },
+  // birthday: {
+  //   day:     { type: Number, min: 1, max: 31, required: false },
+  //   month:   { type: Number, min: 1, max: 12, required: false },
+  //   year:    { type: Number }
+  // },
+  //biography: { type: String },
+  //contacts:  [Contact],
+  //status:    [Status], // My own status updates only
+  //activity:  [Status]  //  All status updates including friends
+});
 
-  });
+
 
 AccountSchema.statics.random = function(callback) {
   this.count(function(err, count) {
@@ -55,6 +70,7 @@ AccountSchema.statics.random = function(callback) {
 };
 
 var Account = mongoose.model('Account', AccountSchema);
+
 
 var registerCallback = function(err) {
 if (err) {
@@ -70,7 +86,7 @@ var PostSchema = new mongoose.Schema({
     title:  String,
     author: {type: Schema.ObjectId, ref: 'Account'},
     body:   String,
-    comments: [{  body: String, date: Date, 
+    comments: [{  body: String, date: Date,
                   author: { type: Schema.ObjectId, ref: 'Account'}
                 }],
     date: { type: Date, default: Date.now },
@@ -92,7 +108,7 @@ var PostSchema = new mongoose.Schema({
 var Post = mongoose.model('Post', PostSchema);
 
 var crypto = require('crypto');
-var regist = function(email, password, firstName, lastName, photo) {
+var regist = function(email, password, name, photo) {
     var password;
     if( password){
       shaSum = crypto.createHash('sha256');
@@ -106,7 +122,7 @@ var regist = function(email, password, firstName, lastName, photo) {
     console.log('Registering ' + email);
     var user = new Account({
       email: email,
-      name: firstName + ' ' + lastName,
+      name: name,
       password: password,
       photoUrl: photo
     });
@@ -164,7 +180,7 @@ var FakeAccount = function(){
 		firstname = RandFirstName();
 		lastname = RandLastName();
     photo = photos[ Math.floor(Math.random()* pho_size )];
-		regist(firstname,"123",firstname,lastname, 'profilePictures/'+photo);
+		regist('acn',"123",firstname + ' ' +lastname, 'profilePictures/'+photo);
 		console.log(i);
 	}
 
@@ -221,7 +237,7 @@ var FakePost = function(){
 			post.pics.push( 'uploads/'+pic_num+'.jpg');
 			voters_size = Math.floor(mt.rand(201));
 			hotOrCool = Math.random() > 0.5;
-      
+
       Channel.random(function(err, cha){
         post.channel = cha;
         post.meta = {};
@@ -235,8 +251,8 @@ var FakePost = function(){
       // post.channel = {};
       // post.channel.name = countrys[mt.rand(3)];
       // post.channel.description = randomSent();
-      
-			
+
+
 		});
 	}
 
@@ -259,4 +275,4 @@ var FakePost = function(){
 
 //FakeAccount();
 //FakeChannel();
-FakePost();
+//FakePost();
