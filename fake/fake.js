@@ -38,7 +38,7 @@ var AccountSchema = new mongoose.Schema({
   email:     { type: String, lowercase: true, unique: true, required: true, trim: true },
   password:  { type: String, select: false },
   photoUrl:  { type: String },
-  name: { type: String, unique: true },
+  name: { type: String, lowercase: true, unique: true, default: '', trim: true },
   country: { type: String},
   subscribes: [{ type: String }]
   // name: {
@@ -180,7 +180,7 @@ var FakeAccount = function(){
 		firstname = RandFirstName();
 		lastname = RandLastName();
     photo = photos[ Math.floor(Math.random()* pho_size )];
-		regist('acn',"123",firstname + ' ' +lastname, 'profilePictures/'+photo);
+		regist('acn',"123",firstname + ' ' +lastname, 'http://ku4n.com/images/'+'profilePictures/'+photo);
 		console.log(i);
 	}
 
@@ -234,7 +234,7 @@ var FakePost = function(){
 			post.date = new Date(2013,4,Math.floor(mt.rand(31)));
 			post.pics = [];
 			pic_num = Math.floor(mt.rand(57)+1);
-			post.pics.push( 'uploads/'+pic_num+'.jpg');
+			post.pics.push( 'http://ku4n.com/images/uploads/'+pic_num+'.jpg');
 			voters_size = Math.floor(mt.rand(201));
 			hotOrCool = Math.random() > 0.5;
 
@@ -275,4 +275,4 @@ var FakePost = function(){
 
 //FakeAccount();
 //FakeChannel();
-//FakePost();
+FakePost();

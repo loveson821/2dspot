@@ -2,7 +2,7 @@ module.exports = function(app, passport, LocalStrategy, Account) {
 
 	var sucMsg = {
 		code: 201,
-		success: 1
+		success: true
 	}
 	
 	function findById(id, fn) {

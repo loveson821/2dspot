@@ -21,10 +21,10 @@ module.exports = function(app, config, mongoose, nodemailer) {
   };
 
   var AccountSchema = new mongoose.Schema({
-    email:     { type: String, lowercase: true, unique: true, required: true },
+    email:     { type: String, lowercase: true, unique: true, required: true, trim: true },
     password:  { type: String, select: false },
     photoUrl:  { type: String },
-    name: { type: String, unique: true },
+    name: { type: String, lowercase: true, unique: true, default: '', trim: true },
     country: { type: String},
     subscribes: [{ type: String }]
     // name: {
@@ -226,7 +226,7 @@ module.exports = function(app, config, mongoose, nodemailer) {
     }
 
     localRegister(req.body.email, req.body.password, req.body.name , function(err, account){
-      if(err) res.send('Unexpected error, maybe duplicated name or email', 500)
+      if(err) res.status(200).send({'success':false,'error':'Unexpected error, maybe duplicated name or email'})
       else{
         console.log('Save command was sent')
         res.status(200).send({'success':true})
@@ -245,7 +245,7 @@ module.exports = function(app, config, mongoose, nodemailer) {
         });
       }
       else{
-        res.send({'status': 200});
+        res.status(200).send({'success': true});
       }
     });
     

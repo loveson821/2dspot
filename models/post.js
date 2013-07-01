@@ -4,6 +4,7 @@ module.exports = function(app, mongoose) {
 	var ei = require('../plugins/imageProcess.js')(app);
 	var redis = app.redis;
 	var Channel = mongoose.model('Channel');
+  var domain = app.config.domain;
 
 	// var fileUploader = require('../plugins/fileUploader.js')(app);
 	// var formidable = require('formidable');
@@ -138,7 +139,7 @@ module.exports = function(app, mongoose) {
 			// 	if(err) throw err;
 			// });
 			//fs.renameSync(path, targetPath);
-			req.body.pics = [path.slice(6)];
+			req.body.pics = [domain + path.slice(6)];
 			req.body.author = req.user;
 			ei.thumbnails(path, 'undefined',function(err, image){
 				if(err){
@@ -215,7 +216,7 @@ module.exports = function(app, mongoose) {
 			com.date = new Date();
 			com.author = req.user;
 			addComment( req.params.id, com , res, function(res){
-				res.redirect('/post/'+req.params.id);
+				//res.redirect('/post/'+req.params.id);
         res.status(200).send({"success": true})
 			});
 

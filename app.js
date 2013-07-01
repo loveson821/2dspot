@@ -24,6 +24,8 @@ app.sessionStore = new MemoryStore();       // Create a session store to share b
 
 //Configurations
 var config = {
+  domain: process.env.DOMAIN || 'http://ku4n.com',
+  
   redis : {
     host: 'pub-redis-13685.us-east-1-2.2.ec2.garantiadata.com',
     pass: '2dspot',
@@ -38,8 +40,7 @@ var config = {
     ]
   })
 };
-
-app.logger = config.logger;
+app.config = config;
 
 app.ensureAuthenticated = function(req, res, next) {
   if (req.isAuthenticated()) { return next(); }
