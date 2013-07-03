@@ -25,14 +25,14 @@ module.exports = function(app) {
 
   var filenameChange = function(src_path, dst, prefix){
     if( dst == 'undefined' ){ dst = path.dirname(src_path); };
-    filename = path.basename(src_path).replace(/\.(jpg|gif|png)$/, prefix+'$&');
+    filename = path.basename(src_path).replace(/\.(jpg|gif|png|jpeg)$/, prefix+'$&');
     return path.join( dst, filename );
   };
 
   var to_s = function(src_path, dst, callback){
     dst = filenameChange(src_path, dst, '_s');
     if( callback == 'undefined'){ callback = DefaultCallback; };
-    thumbnail(src_path, dst, 82, 82, 60, function(err,image){
+    thumbnail(src_path, dst, 82, 82, 80, function(err,image){
       callback(err,image);
     });
   };
@@ -40,7 +40,7 @@ module.exports = function(app) {
   var to_n = function(src_path, dst, callback){
     dst = filenameChange(src_path, dst, '_n');
     if( callback == 'undefined'){ callback = DefaultCallback; };
-    thumbnail(src_path, dst, 164, 164, 80, function(err,image){
+    thumbnail(src_path, dst, 312, 312, 90, function(err,image){
       callback(err,image);
     });
   };
@@ -67,11 +67,25 @@ module.exports = function(app) {
       console.log('all items have been processed');
   };
 
-  var queueThumbnails = function(src_path, dst, callback){
+  var queueThumbnail = function(src_path, dst, callback){
     q.push({srcPath: src_path, dst: dst}, function(err, image){
       if(err){ console.log( err );};
       callback(err, image);
     });
+  };
+  
+  var t  = function(src, callback){
+    createThumbnail(src,'undefined',function(err, image){
+      if(err || !image ) callback(false)
+      else
+        callback(true);
+    })
+  };
+  
+  var queueThumbnails = function(src_paths, dst, callback){
+    async.map(src_paths, t, function(result){
+      callback(true);
+    })
   };
 
   return {

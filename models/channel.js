@@ -4,8 +4,10 @@ module.exports = function(app, mongoose) {
 	var ChannelSchema = new mongoose.Schema({
 		name: {type: String, lowercase: true, unique: true },
 		description: { type: String},
-		createDate: { type: Date, default: Date.now }
+		createAt: { type: Date, default: Date.now }
 	});
+  
+  ChannelSchema.index({"createAt": -1})
 
 	var Channel = mongoose.model('Channel', ChannelSchema);
 
@@ -61,7 +63,18 @@ module.exports = function(app, mongoose) {
 			}
 		});
 	});
-
+  
+  app.get('/channels/search/:word?', function(req, res){
+    var word = req.params.word || ''
+    var searchRegex = new RegExp(word, 'i');
+    Channel.find({name: { $regex: searchRegex }}).exec(function(err, docs){
+      if(err) res.send({'success': false, 'error': err });
+      else{
+        res.send(docs)
+      }
+    })
+  });
+  
 	app.get('/channels/:page?', function(req, res){
     data = {}
     page_size = 10;
@@ -82,11 +95,13 @@ module.exports = function(app, mongoose) {
 	});
 
 	app.get('/channels/suggest/:num?', function(req ,res ){
-		num = req.params.num || 5;
+		var num = req.params.num || 5;
 		getSuggestion(num, function(err, docs){
 			res.send(docs);
 		});
 	});
+  
+  
 
 	return {
 		create: create

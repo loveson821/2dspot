@@ -2,6 +2,8 @@ module.exports = function(app, config, mongoose, nodemailer) {
   var crypto = require('crypto');
   var gravatar = require('gravatar');
   var util = require('util');
+  var Schema = mongoose.Schema
+      , _ = require('underscore');
 
   var Status = new mongoose.Schema({
     name: {
@@ -26,7 +28,11 @@ module.exports = function(app, config, mongoose, nodemailer) {
     photoUrl:  { type: String },
     name: { type: String, lowercase: true, unique: true, default: '', trim: true },
     country: { type: String},
-    subscribes: [{ type: String }]
+    subscribes: [{type: Schema.ObjectId, ref: 'Channel'}],
+    settings: {
+      privacy: {type: Boolean, default: false}
+    } 
+      
     // name: {
     //   first:   { type: String },
     //   last:    { type: String },
@@ -180,7 +186,7 @@ module.exports = function(app, config, mongoose, nodemailer) {
       email: email,
       name: name,
       password: password,
-      photoUrl: gravatar.url(email, {s: '100', d: 'mm'})
+      photoUrl: gravatar.url(email, {s: '200', d: 'retro'})
     });
     user.save(function(err){
           callback(err, user);
@@ -203,7 +209,31 @@ module.exports = function(app, config, mongoose, nodemailer) {
   };
 
   app.get('/account', app.ensureAuthenticated, function(req, res){
-    res.send(req.user);
+    Account.findOne({_id: req.user._id}).populate('subscribes').exec(function(err, doc){
+      if( err ){
+        res.send({
+          'success': false,
+          'error': err
+        })
+      }
+      else{
+        res.send(doc)
+      }
+    })
+  });
+  
+  app.get('/account/profile/:id', function(req, res){
+    Account.findOne({_id: req.params.id}).populate('subscribes').exec(function(err, doc){
+      if( err ){
+        res.send({
+          'success': false,
+          'error': err
+        })
+      }
+      else{
+        res.send(doc)
+      }
+    })
   });
 
   app.get('/account/create', function(req, res){
@@ -235,17 +265,16 @@ module.exports = function(app, config, mongoose, nodemailer) {
   });
 
   // add subscribe
-  app.post('/account/subscribe/:cid', app.ensureAuthenticated, function(req, res){ 
-    Account.findOne({_id: req.user._id}).exec(function(err, acc){
-      if( acc.subscribes.indexOf(req.params.cid) == -1 ){
-        acc.subscribes.push(req.params.cid);
-        acc.save(acc, function(err, doc){
-          if(err) res.send({'status': 400});
-          if(doc) res.send(doc);
-        });
-      }
-      else{
-        res.status(200).send({'success': true});
+  app.get('/account/subscribe/:cid', app.ensureAuthenticated, function(req, res){ 
+    Account.findOneAndUpdate({_id: req.user._id, subscribes: { $ne: req.params.cid }}, {$push: {subscribes: req.params.cid} }) 
+    .exec(function(err, doc){
+      if(err){
+        res.send({'success': false, 'error': err });
+      }else{
+        if(doc) 
+          res.send(doc);
+        else
+          res.send({'success': false, 'error': 'Already existed'})
       }
     });
     
@@ -280,7 +309,21 @@ module.exports = function(app, config, mongoose, nodemailer) {
     });
   });
   
-
+  app.post('/account/settings', app.ensureAuthenticated, function(req, res){
+    Account.findOne({_id: req.user._id}).exec(function(err, acc){
+      if(err) res.send({'success': false, 'error': err })
+      else{
+        acc.settings = _.extend(acc.settings, req.body)
+        acc.save(function(err){
+          if(err) res.send({'success': false, 'error': err })
+          else{
+            res.send({'success':true})
+          }
+        })
+      }
+    })
+  });
+  
   return {
     findById: findById,
     register: localRegister,

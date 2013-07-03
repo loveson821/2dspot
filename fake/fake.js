@@ -18,8 +18,10 @@ var Schema = mongoose.Schema;
 var ChannelSchema = new Schema({
     name: {type: String, lowercase: true, unique: true },
     description: { type: String},
-    createDate: { type: Date, default: Date.now }
+    createAt: { type: Date, default: Date.now }
   });
+  
+ChannelSchema.index({"createAt": -1})
 
 ChannelSchema.statics.random = function(callback) {
   this.count(function(err, count) {
@@ -40,21 +42,7 @@ var AccountSchema = new mongoose.Schema({
   photoUrl:  { type: String },
   name: { type: String, lowercase: true, unique: true, default: '', trim: true },
   country: { type: String},
-  subscribes: [{ type: String }]
-  // name: {
-  //   first:   { type: String },
-  //   last:    { type: String },
-  //   full:    { type: String }
-  // },
-  // birthday: {
-  //   day:     { type: Number, min: 1, max: 31, required: false },
-  //   month:   { type: Number, min: 1, max: 12, required: false },
-  //   year:    { type: Number }
-  // },
-  //biography: { type: String },
-  //contacts:  [Contact],
-  //status:    [Status], // My own status updates only
-  //activity:  [Status]  //  All status updates including friends
+  subscribes: [{type: Schema.ObjectId, ref: 'Channel'}]
 });
 
 
@@ -103,12 +91,13 @@ var PostSchema = new mongoose.Schema({
       //status:    [Status], // My own status updates only
       //activity:  [Status]  //  All status updates including friends
   });
-
+  
+  PostSchema.index({"date": -1, "channel" : 1})
 
 var Post = mongoose.model('Post', PostSchema);
 
 var crypto = require('crypto');
-var regist = function(email, password, name, photo) {
+var regist = function(email, password, name, photo, subs) {
     var password;
     if( password){
       shaSum = crypto.createHash('sha256');
@@ -124,7 +113,8 @@ var regist = function(email, password, name, photo) {
       email: email,
       name: name,
       password: password,
-      photoUrl: photo
+      photoUrl: photo,
+      subscribes: [ subs ]
     });
     user.save(registerCallback);
     console.log('Save command was sent');
@@ -177,11 +167,14 @@ var FakeAccount = function(){
 	// console.log(RandLastName());
 
 	for( var i = 0; i < 1000; i++ ){
-		firstname = RandFirstName();
-		lastname = RandLastName();
-    photo = photos[ Math.floor(Math.random()* pho_size )];
-		regist('acn',"123",firstname + ' ' +lastname, 'http://ku4n.com/images/'+'profilePictures/'+photo);
-		console.log(i);
+    Channel.random(function(err, cha){
+		  firstname = RandFirstName();
+		  lastname = RandLastName();
+      photo = photos[ Math.floor(Math.random()* pho_size )];
+    
+		  regist(firstname,"123",firstname + ' ' +lastname, 'http://ku4n.com/images/'+'profilePictures/'+photo, cha);
+		  console.log(i);
+    });
 	}
 
 }
@@ -204,7 +197,8 @@ var mt = require('mersenne');
 var async = require('async');
 
 var FakeChannel = function(){
-  var countrys = fs.readFileSync('countryList.txt').toString().split("\n");
+  //var countrys = fs.readFileSync('countryList.txt').toString().split("\n");
+  var countrys = ['macao', 'hong kong', 'tw']
   for( i in countrys ){
     Channel.create({
       name: countrys[i],
@@ -231,7 +225,7 @@ var FakePost = function(){
 			for( var i = 0; i < body_size; ++i )
 				post.body += sents[Math.floor(mt.rand(sents_size))].replace(/\r|\n/,"");
 
-			post.date = new Date(2013,4,Math.floor(mt.rand(31)));
+			post.date = new Date(2013,6,Math.floor(mt.rand(31)));
 			post.pics = [];
 			pic_num = Math.floor(mt.rand(57)+1);
 			post.pics.push( 'http://ku4n.com/images/uploads/'+pic_num+'.jpg');

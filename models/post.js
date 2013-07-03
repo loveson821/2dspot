@@ -31,6 +31,8 @@ module.exports = function(app, mongoose) {
 	    //activity:  [Status]  //  All status updates including friends
 	});
   
+  PostSchema.index({"date": -1, "channel" : 1})
+  
   PostSchema.pre('save', function(next) {
 
     if (!this.channel){
@@ -63,14 +65,17 @@ module.exports = function(app, mongoose) {
 	var create = function(obj, callback){
 		console.log("create function");
 		Channel.findOne({name: obj.channel}).select('_id').lean().exec(function(err, doc){
-			obj.channel = doc._id;
-			// console.log(doc);
-			// console.log(obj);
-			var post = new Post(obj);
-			console.log(post);
-			post.save(function(err){
-				callback(err, post);
-			});
+      if(err){
+        callback(err, null)
+      }
+      else{
+  			obj.channel = doc._id;
+  			var post = new Post(obj);
+  			post.save(function(err){
+  				callback(err, post);
+  			});
+      }
+			
 		});
 	};
 
@@ -110,9 +115,7 @@ module.exports = function(app, mongoose) {
 
   var upThumb = function(postId, userId, res, callback){
   	Post.findOneAndUpdate({_id: postId, voter_ids: { $ne: userId }}, {$inc: {"meta.votes": 1}, $push: {voter_ids: userId} }, function(err, doc){
-  		if(err){ console.log(err); res.send(400); }
-  		else
-  			callback(res);
+  		callback(err, doc)
   	});
   };
 
@@ -132,8 +135,27 @@ module.exports = function(app, mongoose) {
 
 
 	app.post('/post', app.ensureAuthenticated, function(req, res, next){
-		if( req.files.pic.size ){
-			path = req.files.pic.path;
+    
+    var len = req.files.pics.length
+    var paths = []
+    req.body.pics = []
+    for( var i = 0; i < len; ++i ){
+      file = req.files.pics[i]
+      paths.push( req.files.pics[i].path )
+      req.body.pics.push( domain + req.files.pics[i].path )
+    }
+    req.body.author = req.user
+
+    ei.thumbnails(paths, 'undefined', function(result){
+      res.send({'success': result, 'doc': req.body})
+    })
+    /*
+		if( req.files.pics.length ){
+      req.files.pics.map(function(pic){
+        console.log(pic)
+      })
+			
+      path = req.files.pic.path;
 			//targetPath = path + '.jpg';
 			// fs.rename(path, targetPath, function(err){
 			// 	if(err) throw err;
@@ -146,7 +168,7 @@ module.exports = function(app, mongoose) {
 					res.send(err);
 				}else{
 					create(req.body, function(err, post){
-						if( err) throw err;
+						if( err) { res.send({'success':false, 'error': err})}
 						else{
 							res.send(post);
 						}
@@ -155,9 +177,11 @@ module.exports = function(app, mongoose) {
 					
 				}
 			});
+      
 		}else{
 	  		fs.unlink(req.files.pic.path);
 		}
+    */
 		
 	});
 
@@ -204,10 +228,15 @@ module.exports = function(app, mongoose) {
 	});
 
 	app.get('/post/:id/up', function(req, res){
-		upThumb(req.params.id, req.user._id, res, function(res){
-			res.send(200);
+		upThumb(req.params.id, req.user._id, res, function(err, doc){
+		  if(err){
+        res.send({'success': false, 'error': err})
+      }else{
+        res.send({'success': true, 'vote': doc.meta.votes})
+      }
 		});
 	});
+  
 
 	app.post('/post/:id/comments', app.ensureAuthenticated, function(req,res){
 		if( req.body ){
@@ -224,9 +253,9 @@ module.exports = function(app, mongoose) {
 		
 	});
 
-	app.get('/post/:id/comment/:page',function(req, res){
+	app.get('/post/:id/comment/:page?',function(req, res){
 		postId = req.params.id;
-		page = req.params.page;
+		page = req.params.page || 1;
 		Post.find({_id: postId}).populate('comments.author').exec(function(err, doc){
 			doc = doc[0];
 			data = {}
@@ -319,13 +348,15 @@ module.exports = function(app, mongoose) {
 			if( err || !cha ) { res.send({ 'status': 404 }); }
       else{
   			Post.find({date: { $gt: start, $lte :end }, channel: cha._id})
+          .select('-comments')
   				.populate({
   					path: 'channel', 
   					match: { name : channel },
   					select: 'name'
   				})
-  				.populate('author comments.author').exec(function(err, docs){
-  					if(err || !docs) { res.send({ 'status': 404 }); }
+  				//.populate('author comments.author').exec(function(err, docs){
+  				.populate('author','email _id').exec(function(err, docs){
+          	if(err || !docs) { res.send({ 'status': 404 }); }
   					if(docs.length == 0){ console.log('should load redis data');}
   					data = {};
   					data.meta = {};
@@ -338,11 +369,12 @@ module.exports = function(app, mongoose) {
   						elem = elem.toObject();
   						elem.score = score;
   						delete elem.voter_ids;
+              //delete elem.comments;
   						array[index] = elem;
-  						elem.comments_len = elem.comments.length;
-  						elem.comments_next = elem.comments.length > page_size;
-  						elem.comments = elem.comments.slice(0,page_size_end);
-						
+  						//elem.comments_len = elem.comments.length;
+  						//elem.comments_next = elem.comments.length > page_size;
+  						//elem.comments = elem.comments.slice(0,page_size_end);
+						  
   					});
   					data.docs.sort(compare);
   					data.docs = docs.slice((page-1)*page_size, page*page_size);
