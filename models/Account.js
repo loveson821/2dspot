@@ -231,7 +231,14 @@ module.exports = function(app, config, mongoose, nodemailer) {
         })
       }
       else{
-        res.send(doc)
+        if( !doc.settings.privacy ||  (req.user && doc._id == req.user.id) )
+          res.send(doc)
+        else{
+          res.send({
+            name: doc.name,
+            photoUrl: doc.photoUrl
+          })
+        }
       }
     })
   });

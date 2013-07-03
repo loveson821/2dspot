@@ -355,7 +355,7 @@ module.exports = function(app, mongoose) {
   					select: 'name'
   				})
   				//.populate('author comments.author').exec(function(err, docs){
-  				.populate('author','email _id').exec(function(err, docs){
+  				.populate('author','email _id name photoUrl').exec(function(err, docs){
           	if(err || !docs) { res.send({ 'status': 404 }); }
   					if(docs.length == 0){ console.log('should load redis data');}
   					data = {};
