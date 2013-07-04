@@ -305,10 +305,21 @@ module.exports = function(app, mongoose) {
 		});
 	});
   
-  app.get('/posts/mine', app.ensureAuthenticated, function(req, res){
-    Post.find({author: req.user}).exec(function(err, docs){
-      res.send(docs);
-    });
+  app.get('/posts/user/:id/:page?', function(req, res){
+    page = req.params.page || 0
+    page_size = 11;
+    Post.find({author: req.params.id})
+      .select('-comments -voter_ids')
+      .sort('-date')
+      .limit(page_size)
+      .skip(page * page_size)
+      .populate('channel', 'name')
+      .exec(function(err, docs){
+        data = {}
+        data.next = docs.length > 10
+        data.docs = docs.slice(0,10);
+        res.send(data);
+      });
   });
 
 	app.get('/posts/meta/:year/:month/:day', function(req, res){
@@ -330,14 +341,14 @@ module.exports = function(app, mongoose) {
 		});
 	});
 
-	app.get('/posts/:year/:month/:day/:channel/:page?', function(req, res){
+	app.get('/posts/:year/:month/:day/:channel/:page?/:count?', function(req, res){
 
 		year = req.params.year;
 		month = req.params.month - 1;
 		day = req.params.day;
 		channel = req.params.channel.replace('-',' ');
-		page = req.params.page;
-		page_size = 10;
+		page = req.params.page || 1;
+		page_size = req.params.count || 20;
 		page_size_end = page_size + 1;
 
 		start = new Date(year,month,day);

@@ -272,7 +272,7 @@ module.exports = function(app, config, mongoose, nodemailer) {
   });
 
   // add subscribe
-  app.get('/account/subscribe/:cid', app.ensureAuthenticated, function(req, res){ 
+  app.post('/account/subscribe/:cid', app.ensureAuthenticated, function(req, res){ 
     Account.findOneAndUpdate({_id: req.user._id, subscribes: { $ne: req.params.cid }}, {$push: {subscribes: req.params.cid} }) 
     .exec(function(err, doc){
       if(err){
