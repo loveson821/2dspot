@@ -5,6 +5,8 @@ module.exports = function(app, mongoose) {
 	var redis = app.redis;
 	var Channel = mongoose.model('Channel');
   var domain = app.config.domain;
+  var _ = require('underscore')
+      , mongooseRedisCache = require("mongoose-redis-cache");
 
 	// var fileUploader = require('../plugins/fileUploader.js')(app);
 	// var formidable = require('formidable');
@@ -18,7 +20,8 @@ module.exports = function(app, mongoose) {
                 }],
 		date: { type: Date, default: Date.now },
 		hidden: Boolean,
-		voter_ids: [{ type: Schema.ObjectId, select: false }],
+		upVoters: [{ type: Schema.ObjectId, ref: 'Account'}],
+    downVoters: [{ type: Schema.ObjectId, ref: 'Account'}],
 		pics: [ { type: String } ],
 		meta: {
 			votes: { type: Number, default: 0 },
@@ -32,6 +35,7 @@ module.exports = function(app, mongoose) {
 	});
   
   PostSchema.index({"date": -1, "channel" : 1})
+  PostSchema.set('redisCache', true)
   
   PostSchema.pre('save', function(next) {
 
@@ -114,16 +118,14 @@ module.exports = function(app, mongoose) {
   };
 
   var upThumb = function(postId, userId, res, callback){
-  	Post.findOneAndUpdate({_id: postId, voter_ids: { $ne: userId }}, {$inc: {"meta.votes": 1}, $push: {voter_ids: userId} }, function(err, doc){
+  	Post.findOneAndUpdate({_id: postId, upVoters: { $ne: userId }}, {$inc: {"meta.votes": 1}, $push: { upVoters: userId} }, function(err, doc){
   		callback(err, doc)
   	});
   };
 
   var downThumb = function(postId, userId, res, callback){
-  	Post.findOneAndUpdate({_id: postId, voter_ids: { $ne: userId }}, {$inc: {"meta.votes": -1}, $push: {voter_ids: userId} }, function(err, doc){
-  		if(err){ console.log(err); res.send(400); }
-  		else
-  			callback(res);
+  	Post.findOneAndUpdate({_id: postId, downVoters: { $ne: userId }}, {$inc: {"meta.votes": -1}, $push: { downVoters: userId} }, function(err, doc){
+  	  callback(err, doc);
   	});
   };
 
@@ -217,9 +219,20 @@ module.exports = function(app, mongoose) {
 
 	
 	app.get('/post/:id', function(req, res){
-		Post.find({_id: req.params.id}).populate('author comments.author').exec(function(err,doc){
+		Post.findOne({_id: req.params.id}).populate('author comments.author').exec(function(err,doc){
 			if(err) res.send(err);
-			res.send(doc);
+      else{
+        data = {}
+        data = _.extend(data, doc.toObject())
+        if( req.user ){
+          data.voted = doc.upVoters.indexOf(req.user.id) >= 0 ? 1 : (doc.downVoters.indexOf(req.user.id) < 0 ? -1 : 0)
+        }
+        else
+          data.voted = -1
+        
+        res.send(data);
+      }
+			
 		});
 	});
 
@@ -227,7 +240,7 @@ module.exports = function(app, mongoose) {
 		res.render('createComment', {postid: req.params.id, user: req.user});
 	});
 
-	app.get('/post/:id/up', function(req, res){
+	app.get('/post/:id/up', app.ensureAuthenticated, function(req, res){
 		upThumb(req.params.id, req.user._id, res, function(err, doc){
 		  if(err){
         res.send({'success': false, 'error': err})
@@ -237,6 +250,15 @@ module.exports = function(app, mongoose) {
 		});
 	});
   
+  app.get('/post/:id/down', app.ensureAuthenticated, function(req, res){
+		downThumb(req.params.id, req.user._id, res, function(err, doc){
+		  if(err){
+        res.send({'success': false, 'error': err})
+      }else{
+        res.send({'success': true, 'vote': doc.meta.votes})
+      }
+		});
+  });
 
 	app.post('/post/:id/comments', app.ensureAuthenticated, function(req,res){
 		if( req.body ){
@@ -379,7 +401,13 @@ module.exports = function(app, mongoose) {
   						score = elem.rank();
   						elem = elem.toObject();
   						elem.score = score;
-  						delete elem.voter_ids;
+              if( req.user ){
+                elem.voted = elem.upVoters.indexOf(req.user.id) >= 0 ? 1 : (elem.downVoters.indexOf(req.user.id) < 0 ? -1 : 0)
+              }
+              else
+                elem.voted = -1
+  						delete elem.upVoters;
+              delete elem.downVoters;
               //delete elem.comments;
   						array[index] = elem;
   						//elem.comments_len = elem.comments.length;

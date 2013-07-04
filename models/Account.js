@@ -3,7 +3,8 @@ module.exports = function(app, config, mongoose, nodemailer) {
   var gravatar = require('gravatar');
   var util = require('util');
   var Schema = mongoose.Schema
-      , _ = require('underscore');
+      , _ = require('underscore')
+      , mongooseRedisCache = require("mongoose-redis-cache");
 
   var Status = new mongoose.Schema({
     name: {
@@ -294,11 +295,12 @@ module.exports = function(app, config, mongoose, nodemailer) {
         res.send({'status':400});
       }
       else{
-        index = acc.subscribes.indexOf(channel);
-        acc.subscribes.splice(index,index);
-        acc.save(acc, function(err, doc){
-          if(err) res.send({'status': 400});
-          if(doc) res.send(doc);
+        index = acc.subscribes.indexOf(req.params.cid);
+        acc.subscribes.splice(index,index+1);
+        acc.save(function(err, doc){
+          if(err || !doc) res.send({'status': 400});
+          else
+            res.send(doc);
         });
         
       }

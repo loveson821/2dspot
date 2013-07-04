@@ -25,7 +25,10 @@
     "winston": "0.7.1",
     "formidable": "1.0.14",
     "ejs": "0.8.3",
-    "underscore": "latest"
+    "underscore": "latest",
+    "redis": "latest",
+    "hiredis": "latest",
+    "mongoose-redis-cache": "latest"
   },
     "engines": {
      "node": "0.10.x",

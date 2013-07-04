@@ -40,7 +40,7 @@ module.exports = function(app) {
   var to_n = function(src_path, dst, callback){
     dst = filenameChange(src_path, dst, '_n');
     if( callback == 'undefined'){ callback = DefaultCallback; };
-    thumbnail(src_path, dst, 312, 312, 90, function(err,image){
+    thumbnail(src_path, dst, 312, 312, 100, function(err,image){
       callback(err,image);
     });
   };

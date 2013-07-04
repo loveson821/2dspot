@@ -1,5 +1,6 @@
 module.exports = function(app, mongoose) {
 	var async = require('async');
+  var mongooseRedisCache = require("mongoose-redis-cache");
 
 	var ChannelSchema = new mongoose.Schema({
 		name: {type: String, lowercase: true, unique: true },
@@ -9,6 +10,7 @@ module.exports = function(app, mongoose) {
   
   ChannelSchema.index({"createAt": -1})
 
+  ChannelSchema.set('redisCache', true)
 	var Channel = mongoose.model('Channel', ChannelSchema);
 
 	var RAcomparator = function(a,b) {

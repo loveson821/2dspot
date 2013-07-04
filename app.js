@@ -3,6 +3,7 @@ var express = require('express')
   , http = require('http')
   , mongo = require('mongodb')
   , mongoose = require('mongoose')
+  , mongooseRedisCache = require("mongoose-redis-cache")
   , path = require('path')
   , flash = require('connect-flash')    // flash message when redirect page
   , nodemailer = require('nodemailer')  // send mail
@@ -97,7 +98,7 @@ fs.readdirSync('routes').forEach(function(file) {
 */
 
 // Model needs plugins
-app.redis = require('./plugins/redis')(app, config);
+app.redis = require('./plugins/redis')(app, config, mongoose);
 
 // Import the models
 // app.models = {

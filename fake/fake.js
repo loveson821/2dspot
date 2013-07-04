@@ -79,7 +79,8 @@ var PostSchema = new mongoose.Schema({
                 }],
     date: { type: Date, default: Date.now },
     hidden: Boolean,
-    voter_ids: [{ type: Schema.ObjectId, select: false }],
+		upVoters: [{ type: Schema.ObjectId, ref: 'Account'}],
+    downVoters: [{ type: Schema.ObjectId, ref: 'Account'}],
     pics: [ { type: String } ],
     meta: {
       votes: { type: Number, default: 0 },
@@ -230,14 +231,18 @@ var FakePost = function(){
 			pic_num = Math.floor(mt.rand(57)+1);
 			post.pics.push( 'http://ku4n.com/images/uploads/'+pic_num+'.jpg');
 			voters_size = Math.floor(mt.rand(201));
-			hotOrCool = Math.random() > 0.5;
+			//hotOrCool = Math.random() > 0.5;
 
       Channel.random(function(err, cha){
         post.channel = cha;
-        post.meta = {};
-        post.meta.votes = hotOrCool?voters_size*-1:voters_size;
-        Account.find().skip(Math.floor(mt.rand(600))).limit(voters_size).select('_id').exec(function(err, docs){
-          post.voter_ids = docs;
+        
+        //post.meta.votes = hotOrCool?voters_size*-1:voters_size;
+        Account.find().skip(Math.floor(mt.rand(600))).limit(voters_size).select('_id').lean().exec(function(err, docs){
+          slicePoint = Math.floor(mt.rand(voters_size));
+          post.upVoters = docs.slice(0,slicePoint);
+          post.downVoters = docs.slice(slicePoint, voters_size - slicePoint);
+          post.meta = {};
+          post.meta.votes = post.upVoters.length - post.downVoters.length;
           Post(post).save(createPostCallback);
         });
       });
