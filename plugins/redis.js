@@ -1,4 +1,5 @@
 module.exports = function(app, config, mongoose) {
+  /*
   var mongooseRedisCache = require("mongoose-redis-cache");
   mongooseRedisCache(mongoose, {
      host: config.redis.host,
@@ -6,7 +7,7 @@ module.exports = function(app, config, mongoose) {
      pass: config.redis.pass,
      options: "redisOptions"
    })
-  /*
+  
 	var redis = require('redis');
 
 	var client = redis.createClient( config.redis.port, config.redis.host );

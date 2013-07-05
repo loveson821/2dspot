@@ -35,7 +35,7 @@ module.exports = function(app, mongoose) {
 	});
   
   PostSchema.index({"date": -1, "channel" : 1})
-  PostSchema.set('redisCache', true)
+  //PostSchema.set('redisCache', true)
   
   PostSchema.pre('save', function(next) {
 
@@ -139,79 +139,25 @@ module.exports = function(app, mongoose) {
 	app.post('/post', app.ensureAuthenticated, function(req, res, next){
     
     var len = req.files.pics.length
-    var paths = []
-    req.body.pics = []
-    for( var i = 0; i < len; ++i ){
-      file = req.files.pics[i]
-      paths.push( req.files.pics[i].path )
-      req.body.pics.push( domain + req.files.pics[i].path )
-    }
-    req.body.author = req.user
+    if(len){
+      var paths = []
+      req.body.pics = []
+      for( var i = 0; i < len; ++i ){
+        file = req.files.pics[i]
+        paths.push( req.files.pics[i].path )
+        req.body.pics.push( domain + req.files.pics[i].path )
+      }
+      req.body.author = req.user
 
-    ei.thumbnails(paths, 'undefined', function(result){
-      res.send({'success': result, 'doc': req.body})
-    })
-    /*
-		if( req.files.pics.length ){
-      req.files.pics.map(function(pic){
-        console.log(pic)
+      ei.thumbnails(paths, 'undefined', function(result){
+        res.send({'success': result, 'doc': req.body})
       })
-			
-      path = req.files.pic.path;
-			//targetPath = path + '.jpg';
-			// fs.rename(path, targetPath, function(err){
-			// 	if(err) throw err;
-			// });
-			//fs.renameSync(path, targetPath);
-			req.body.pics = [domain + path.slice(6)];
-			req.body.author = req.user;
-			ei.thumbnails(path, 'undefined',function(err, image){
-				if(err){
-					res.send(err);
-				}else{
-					create(req.body, function(err, post){
-						if( err) { res.send({'success':false, 'error': err})}
-						else{
-							res.send(post);
-						}
-							
-					});
-					
-				}
-			});
-      
-		}else{
-	  		fs.unlink(req.files.pic.path);
+    }else{
+	  	fs.unlink(req.files.pic.path);
 		}
-    */
+    
 		
 	});
-
-	// app.post('/post',function(req, res) {
-	//     var form = new formidable.IncomingForm;
-	//     form.keepExtensions = true;
-	//     form.uploadDir = 'tmp/';
-	 
-	//     form.parse(req, function(err, fields, files){
-	//       if (err) return res.end('You found error');
-	//       console.log(files.pic);
-	//     });
-	 
-	//     form.on('progress', function(bytesReceived, bytesExpected) {
-	//         console.log(bytesReceived + ' ' + bytesExpected);
-	//     });
-	 
-	//     form.on('error', function(err) {
-	//         res.writeHead(200, {'content-type': 'text/plain'});
-	//         res.end('error:\n\n'+util.inspect(err));
-	//     });
-	//     res.end('Done');
-	//     return;
-	// });
-
-	// app.post('/post', fileUploader.uploadFile, function(req, res){
-	// 	res.send({'status':33});
-	// });
 
 	app.get('/post', app.ensureAuthenticated, function(req, res){
 		res.render('createpost',{ user: req.user });
@@ -219,18 +165,18 @@ module.exports = function(app, mongoose) {
 
 	
 	app.get('/post/:id', function(req, res){
-		Post.findOne({_id: req.params.id}).populate('author comments.author').exec(function(err,doc){
+		Post.findOne({_id: req.params.id}).populate('author comments.author').lean().exec(function(err,doc){
 			if(err) res.send(err);
       else{
-        data = {}
-        data = _.extend(data, doc.toObject())
+
         if( req.user ){
-          data.voted = doc.upVoters.indexOf(req.user.id) >= 0 ? 1 : (doc.downVoters.indexOf(req.user.id) < 0 ? -1 : 0)
+          doc.voted = _.contains(doc.upVoters.map(function(x){ return x.toString()}), req.user.id) ? 1 : 
+                      (_.contains(doc.downVoters.map(function(x){ return x.toString()}), req.user.id)  ? 0 : -1)
         }
         else
-          data.voted = -1
-        
-        res.send(data);
+          doc.voted = -1
+
+        res.send(doc);
       }
 			
 		});

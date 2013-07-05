@@ -10,7 +10,7 @@ module.exports = function(app, mongoose) {
   
   ChannelSchema.index({"createAt": -1})
 
-  ChannelSchema.set('redisCache', true)
+  //ChannelSchema.set('redisCache', true)
 	var Channel = mongoose.model('Channel', ChannelSchema);
 
 	var RAcomparator = function(a,b) {
