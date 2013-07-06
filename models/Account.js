@@ -266,8 +266,15 @@ module.exports = function(app, config, mongoose, nodemailer) {
     localRegister(req.body.email, req.body.password, req.body.name , function(err, account){
       if(err) res.status(200).send({'success':false,'error':'Unexpected error, maybe duplicated name or email'})
       else{
-        console.log('Save command was sent')
-        res.status(200).send({'success':true})
+        req.logIn(account, function(err){
+          if(err) res.send({"success":false, 'error': err})
+          else{
+            //res.status(200).send({'success':true})
+            //res.redirect('/account')
+            res.send({'success': true});
+          }
+        })
+        
       }
     });
   });
@@ -280,7 +287,7 @@ module.exports = function(app, config, mongoose, nodemailer) {
         res.send({'success': false, 'error': err });
       }else{
         if(doc) 
-          res.send(doc);
+          res.send({'success': true});
         else
           res.send({'success': false, 'error': 'Already existed'})
       }
@@ -292,15 +299,15 @@ module.exports = function(app, config, mongoose, nodemailer) {
   app.delete('/account/subscribe/:cid', app.ensureAuthenticated, function(req, res){
     Account.findOne({_id: req.user._id}).exec(function(err, acc){
       if( acc.subscribes.indexOf(req.params.cid) == -1 ){
-        res.send({'status':400});
+        res.send({'success': false, 'error': 'Channel not subscribed' })
       }
       else{
         index = acc.subscribes.indexOf(req.params.cid);
         acc.subscribes.splice(index,index+1);
         acc.save(function(err, doc){
-          if(err || !doc) res.send({'status': 400});
+          if(err || !doc) res.send({'success': false, 'error': err })
           else
-            res.send(doc);
+            res.send({'success': true});
         });
         
       }
@@ -311,9 +318,9 @@ module.exports = function(app, config, mongoose, nodemailer) {
   app.get('/account/subscribe/:cid', app.ensureAuthenticated, function(req, res){
     Account.findOne({_id: req.user._id}).exec(function(err, acc){
       if( acc.subscribes.indexOf(req.params.cid) == -1 ){
-        res.send({'status': false});
+        res.send({'success': false});
       }else{
-        res.send({'status': true});
+        res.send({'success': true});
       }
     });
   });
