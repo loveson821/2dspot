@@ -135,23 +135,46 @@ module.exports = function(app, mongoose) {
 
 	app.post('/post', app.ensureAuthenticated, function(req, res, next){
     
-    var len = req.files.pics.length
-    if(len){
+    if( !_.isNull(req.files.pics) ){
       var paths = []
       req.body.pics = []
-      for( var i = 0; i < len; ++i ){
-        file = req.files.pics[i]
-        paths.push( req.files.pics[i].path )
-        req.body.pics.push( domain + req.files.pics[i].path )
+      
+      if( _.isArray(req.files.pics) ){
+        len = req.files.pics.length
+        for( var i = 0; i < len; ++i ){
+          file = req.files.pics[i]
+          paths.push( req.files.pics[i].path )
+          req.body.pics.push( domain + req.files.pics[i].path )
+        }
+      }else{
+        
+        paths.push( req.files.pics.path )
+        req.body.pics.push( domain + req.files.pics.path )
       }
+      
       req.body.author = req.user
 
       ei.thumbnails(paths, 'undefined', function(result){
-        res.send({'success': result, 'doc': req.body})
+        if( result ){
+          create(req.body, function(err, doc){
+            if(err) res.send({'success': false, 'err': 'save post fail'})
+            else{
+              res.send({'success': true})
+            }
+          })
+        }
+        else{
+          res.send({'success': false, 'err': 'pictures upload failed'})
+        }
+        //res.send({'success': result, 'doc': req.body})
       })
+      
+      
+      
     }else{
-	  	fs.unlink(req.files.pic.path);
-		}
+	  	fs.unlink(req.files.pics.path);
+		  res.send({'success': false, 'err': 'no picture cannot create'})
+    }
     
 		
 	});
@@ -162,7 +185,7 @@ module.exports = function(app, mongoose) {
 
 	
 	app.get('/post/:id', function(req, res){
-		Post.findOne({_id: req.params.id}).populate('author','email _id name photoUrl').lean().exec(function(err,doc){
+		Post.findOne({_id: req.params.id}).populate('author','_id name photoUrl').lean().exec(function(err,doc){
 			if(err || !doc ) res.send({'success': false, 'error': 'Not found'})
       else{
 
@@ -226,7 +249,7 @@ module.exports = function(app, mongoose) {
 	app.get('/post/:id/comments/:page?',function(req, res){
 		postId = req.params.id;
 		page = req.params.page || 1;
-		Post.find({_id: postId}).populate('comments.author','email _id name photoUrl').exec(function(err, doc){
+		Post.find({_id: postId}).populate('comments.author','_id name photoUrl').exec(function(err, doc){
 			doc = doc[0];
 			data = {}
 			data.count = doc.comments.length;
@@ -279,7 +302,7 @@ module.exports = function(app, mongoose) {
     page = req.params.page || 0
     page_size = 11;
     Post.find({author: req.params.id})
-      .select('-comments -voter_ids')
+      .select('-comments')
       .sort('-date')
       .limit(page_size)
       .skip(page * page_size)
