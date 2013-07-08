@@ -108,12 +108,9 @@ module.exports = function(app, mongoose) {
 		});
 	};
  
-  var addComment = function(postId, comment, res, callback){
+  var addComment = function(postId, comment, callback){
 		Post.findOneAndUpdate({_id: postId}, { $push: { comments: comment}}, function(err){
-			if(err)
-				console.log(err);
-			else
-				callback(res);
+			callback(err)
 		});
   };
 
@@ -165,8 +162,8 @@ module.exports = function(app, mongoose) {
 
 	
 	app.get('/post/:id', function(req, res){
-		Post.findOne({_id: req.params.id}).populate('author comments.author').lean().exec(function(err,doc){
-			if(err) res.send(err);
+		Post.findOne({_id: req.params.id}).populate('author','email _id name photoUrl').lean().exec(function(err,doc){
+			if(err || !doc ) res.send({'success': false, 'error': 'Not found'})
       else{
 
         if( req.user ){
@@ -175,6 +172,9 @@ module.exports = function(app, mongoose) {
         }
         else
           doc.voted = -1
+          doc.downVoters = doc.downVoters.length
+          doc.upVoters = doc.upVoters.length 
+          delete doc.comments
 
         res.send(doc);
       }
@@ -182,7 +182,7 @@ module.exports = function(app, mongoose) {
 		});
 	});
 
-	app.get('/post/:id/addComment', function(req, res){
+	app.get('/post/:id/addComment', app.ensureAuthenticated, function(req, res){
 		res.render('createComment', {postid: req.params.id, user: req.user});
 	});
 
@@ -212,24 +212,26 @@ module.exports = function(app, mongoose) {
 			com = req.body;
 			com.date = new Date();
 			com.author = req.user;
-			addComment( req.params.id, com , res, function(res){
-				//res.redirect('/post/'+req.params.id);
-        res.status(200).send({"success": true})
+			addComment( req.params.id, com , function(err){
+				if(err) res.send({'success': false, 'error': err})
+        else{
+          res.send({'success': true})
+        }
 			});
 
 		}
 		
 	});
 
-	app.get('/post/:id/comment/:page?',function(req, res){
+	app.get('/post/:id/comments/:page?',function(req, res){
 		postId = req.params.id;
 		page = req.params.page || 1;
-		Post.find({_id: postId}).populate('comments.author').exec(function(err, doc){
+		Post.find({_id: postId}).populate('comments.author','email _id name photoUrl').exec(function(err, doc){
 			doc = doc[0];
 			data = {}
 			data.count = doc.comments.length;
 			data.next = data.count - page*20 > 0;
-			data.comments = doc.comments.slice((page-1)*20, page*20);
+			data.comments = doc.comments.reverse().slice((page-1)*20, page*20);
 
 			res.send(data);
 		});
