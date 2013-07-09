@@ -144,12 +144,12 @@ module.exports = function(app, mongoose) {
         for( var i = 0; i < len; ++i ){
           file = req.files.pics[i]
           paths.push( req.files.pics[i].path )
-          req.body.pics.push( domain + req.files.pics[i].path )
+          req.body.pics.push( domain + req.files.pics[i].path.replace('public','') )
         }
       }else{
         
         paths.push( req.files.pics.path )
-        req.body.pics.push( domain + req.files.pics.path )
+        req.body.pics.push( domain + req.files.pics.path.replace('public','') )
       }
       
       req.body.author = req.user

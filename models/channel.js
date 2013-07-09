@@ -1,6 +1,7 @@
 module.exports = function(app, mongoose) {
 	var async = require('async');
   var mongooseRedisCache = require("mongoose-redis-cache");
+  var url = require('url');
 
 	var ChannelSchema = new mongoose.Schema({
 		name: {type: String, lowercase: true, unique: true },
@@ -79,14 +80,22 @@ module.exports = function(app, mongoose) {
   
 	app.get('/channels/:page?', function(req, res){
     data = {}
-    page_size = 10;
-    page = req.params.page || 1;
-		Channel.find({}).exec(function(err ,docs){
-			data.meta = {};
-			data.meta.count = docs.length;
-			data.meta.next = data.meta.count - page*page_size > 0;
-      data.channels = docs.map(normalFilter).slice((page-1)*page_size, page*page_size);
-			res.send(data);
+    page_size = url.parse(req.url, true).query.count || 20;
+    page = (req.param('page') > 0 ? req.param('page') : 1) - 1;
+		Channel.find({}).limit(page_size).skip(page*page_size).exec(function(err ,docs){
+      if( err ) res.send({'success': false, 'error': err })
+      else{
+        Channel.count().exec(function(err, count){
+    			data.meta = {};
+    			data.meta.count = count;
+    			data.meta.next = data.meta.count - page*page_size > 0;
+          //data.channels = docs.slice((page-1)*page_size, page*page_size);
+          data.channels = docs
+    			res.send(data);
+        })
+      }
+      
+			
 		});
 	});
 
