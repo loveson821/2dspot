@@ -6,7 +6,7 @@ module.exports = function(app, mongoose) {
 	var Channel = mongoose.model('Channel');
   var domain = app.config.domain;
   var _ = require('underscore')
-      , mongooseRedisCache = require("mongoose-redis-cache");
+      , time = require('time');
 
 	// var fileUploader = require('../plugins/fileUploader.js')(app);
 	// var formidable = require('formidable');
@@ -344,8 +344,8 @@ module.exports = function(app, mongoose) {
 		page_size = req.params.count || 20;
 		page_size_end = page_size + 1;
 
-		start = new Date(year,month,day);
-		end = new Date(year,month,day);
+		start = new time.Date(year,month,day, 'UTC');
+		end = new time.Date(year,month,day, 'UTC');
 		end.setDate(end.getDate()+1);
 
 		Channel.findOne({ name: channel}).exec(function(err, cha){

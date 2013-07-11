@@ -30,6 +30,7 @@ module.exports = function(app, config, mongoose, nodemailer) {
     name: { type: String, lowercase: true, unique: true, default: '', trim: true },
     country: { type: String},
     subscribes: [{type: Schema.ObjectId, ref: 'Channel'}],
+    uuid: { type: String, select: false },
     settings: {
       privacy: {type: Boolean, default: false}
     } 

@@ -20,7 +20,7 @@ var ChannelSchema = new Schema({
     description: { type: String},
     createAt: { type: Date, default: Date.now }
   });
-  
+
 ChannelSchema.index({"createAt": -1})
 
 ChannelSchema.statics.random = function(callback) {
@@ -92,7 +92,7 @@ var PostSchema = new mongoose.Schema({
       //status:    [Status], // My own status updates only
       //activity:  [Status]  //  All status updates including friends
   });
-  
+
   PostSchema.index({"date": -1, "channel" : 1})
 
 var Post = mongoose.model('Post', PostSchema);
@@ -172,7 +172,7 @@ var FakeAccount = function(){
 		  firstname = RandFirstName();
 		  lastname = RandLastName();
       photo = photos[ Math.floor(Math.random()* pho_size )];
-    
+
 		  regist(firstname,"123",firstname + ' ' +lastname, 'http://ku4n.com/images/'+'profilePictures/'+photo, cha);
 		  console.log(i);
     });
@@ -235,7 +235,7 @@ var FakePost = function(){
 
       Channel.random(function(err, cha){
         post.channel = cha;
-        
+
         //post.meta.votes = hotOrCool?voters_size*-1:voters_size;
         Account.find().skip(Math.floor(mt.rand(600))).limit(voters_size).select('_id').lean().exec(function(err, docs){
           slicePoint = Math.floor(mt.rand(voters_size));

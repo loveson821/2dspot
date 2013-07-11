@@ -28,7 +28,9 @@
     "underscore": "latest",
     "redis": "latest",
     "hiredis": "latest",
-    "mongoose-redis-cache": "latest"
+    "mongoose-redis-cache": "latest",
+    "apn": "latest",
+    "time": "latest"
   },
     "engines": {
      "node": "0.10.x",
