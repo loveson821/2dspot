@@ -52,8 +52,9 @@ POST
 
 		/posts/user/:id/:page
 
-	-	`id` - User ID 
-	-	`page` - The number of page of results
+	> `id` - User ID <br>
+	> `page` - The number of page of results
+
 
 	Example response:
 
