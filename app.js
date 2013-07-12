@@ -3,11 +3,11 @@ var express = require('express')
   , http = require('http')
   , mongo = require('mongodb')
   , mongoose = require('mongoose')
-  , mongooseRedisCache = require("mongoose-redis-cache")
+  , mongoStore = require('connect-mongo')(express)
   , path = require('path')
   , flash = require('connect-flash')    // flash message when redirect page
   , nodemailer = require('nodemailer')  // send mail
-  , MemoryStore = require('connect').session.MemoryStore
+  , MemoryStore = express.session.MemoryStore
   , dbPath = 'mongodb://localhost/2dspot'
   , events = require('events')
   , fs = require('fs')
@@ -65,6 +65,7 @@ app.configure(function(){
     cookie: { maxAge: 2592000000 },
     secret: 'keyboard cat 2dspot',
     key: '2dspot.sid',
+    //store: new mongoStore({ db: '2dspot' })
     store: app.sessionStore
   }));
   app.use(flash());

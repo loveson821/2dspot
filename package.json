@@ -30,7 +30,8 @@
     "hiredis": "latest",
     "mongoose-redis-cache": "latest",
     "apn": "latest",
-    "time": "latest"
+    "time": "latest",
+    "connect-mongo": "latest"
   },
     "engines": {
      "node": "0.10.x",
