@@ -210,7 +210,7 @@ module.exports = function(app, config, mongoose, nodemailer) {
     });
   };
 
-  app.get('/account', app.ensureAuthenticated, function(req, res){
+  app.get('/api/v1/account', app.ensureAuthenticated, function(req, res){
     Account.findOne({_id: req.user._id}).populate('subscribes').exec(function(err, doc){
       if( err ){
         res.send({
@@ -224,7 +224,7 @@ module.exports = function(app, config, mongoose, nodemailer) {
     })
   });
   
-  app.get('/account/profile/:id', function(req, res){
+  app.get('/api/v1/account/profile/:id', function(req, res){
     Account.findOne({_id: req.params.id}).populate('subscribes').exec(function(err, doc){
       if( err ){
         res.send({
@@ -249,7 +249,7 @@ module.exports = function(app, config, mongoose, nodemailer) {
     res.render('createAccount');
   });
 
-  app.post('/account', function(req, res){
+  app.post('/api/v1/account', function(req, res){
 
     req.params = req.body;
     console.log(req.body);
@@ -281,7 +281,7 @@ module.exports = function(app, config, mongoose, nodemailer) {
   });
 
   // add subscribe
-  app.post('/account/subscribe/:cid', app.ensureAuthenticated, function(req, res){ 
+  app.post('/api/v1/account/subscribe/:cid', app.ensureAuthenticated, function(req, res){ 
     Account.findOneAndUpdate({_id: req.user._id, subscribes: { $ne: req.params.cid }}, {$push: {subscribes: req.params.cid} }) 
     .exec(function(err, doc){
       if(err){
@@ -297,7 +297,7 @@ module.exports = function(app, config, mongoose, nodemailer) {
   });
   
   // remove subscribe
-  app.delete('/account/subscribe/:cid', app.ensureAuthenticated, function(req, res){
+  app.delete('/api/v1/account/subscribe/:cid', app.ensureAuthenticated, function(req, res){
     Account.findOne({_id: req.user._id}).exec(function(err, acc){
       if( acc.subscribes.indexOf(req.params.cid) == -1 ){
         res.send({'success': false, 'error': 'Channel not subscribed' })
@@ -316,7 +316,7 @@ module.exports = function(app, config, mongoose, nodemailer) {
   });
   
   // check subscribe
-  app.get('/account/subscribe/:cid', app.ensureAuthenticated, function(req, res){
+  app.get('/api/v1/account/subscribe/:cid', app.ensureAuthenticated, function(req, res){
     Account.findOne({_id: req.user._id}).exec(function(err, acc){
       if( acc.subscribes.indexOf(req.params.cid) == -1 ){
         res.send({'success': false});
@@ -326,7 +326,7 @@ module.exports = function(app, config, mongoose, nodemailer) {
     });
   });
   
-  app.post('/account/settings', app.ensureAuthenticated, function(req, res){
+  app.post('/api/v1/account/settings', app.ensureAuthenticated, function(req, res){
     Account.findOne({_id: req.user._id}).exec(function(err, acc){
       if(err) res.send({'success': false, 'error': err })
       else{

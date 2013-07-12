@@ -126,14 +126,16 @@ module.exports = function(app, mongoose) {
   	});
   };
 
+  /*
   app.get('/post/:id/rank',function(req, res){
   	Post.findOne({_id: req.params.id}, function(err, doc){
   		res.send('doc rank is '+ doc.rank());
   	});
   });
+  */
 
 
-	app.post('/post', app.ensureAuthenticated, function(req, res, next){
+	app.post('/api/v1/post', app.ensureAuthenticated, function(req, res, next){
     
     if( !_.isNull(req.files.pics) ){
       var paths = []
@@ -184,7 +186,7 @@ module.exports = function(app, mongoose) {
 	});
 
 	
-	app.get('/post/:id', function(req, res){
+	app.get('/api/v1/post/:id', function(req, res){
 		Post.findOne({_id: req.params.id}).populate('author','_id name photoUrl').lean().exec(function(err,doc){
 			if(err || !doc ) res.send({'success': false, 'error': 'Not found'})
       else{
@@ -209,7 +211,7 @@ module.exports = function(app, mongoose) {
 		res.render('createComment', {postid: req.params.id, user: req.user});
 	});
 
-	app.get('/post/:id/up', app.ensureAuthenticated, function(req, res){
+	app.get('/api/v1/post/:id/up', app.ensureAuthenticated, function(req, res){
 		upThumb(req.params.id, req.user._id, res, function(err, doc){
 		  if(err){
         res.send({'success': false, 'error': err})
@@ -219,7 +221,7 @@ module.exports = function(app, mongoose) {
 		});
 	});
   
-  app.get('/post/:id/down', app.ensureAuthenticated, function(req, res){
+  app.get('/api/v1/post/:id/down', app.ensureAuthenticated, function(req, res){
 		downThumb(req.params.id, req.user._id, res, function(err, doc){
 		  if(err){
         res.send({'success': false, 'error': err})
@@ -229,7 +231,7 @@ module.exports = function(app, mongoose) {
 		});
   });
 
-	app.post('/post/:id/comments', app.ensureAuthenticated, function(req,res){
+	app.post('/api/v1/post/:id/comments', app.ensureAuthenticated, function(req,res){
 		if( req.body ){
 
 			com = req.body;
@@ -246,7 +248,7 @@ module.exports = function(app, mongoose) {
 		
 	});
 
-	app.get('/post/:id/comments/:page?',function(req, res){
+	app.get('/api/v1/post/:id/comments/:page?',function(req, res){
 		postId = req.params.id;
 		page = req.params.page || 1;
 		Post.find({_id: postId}).populate('comments.author','_id name photoUrl').exec(function(err, doc){
@@ -260,7 +262,7 @@ module.exports = function(app, mongoose) {
 		});
 	});
 
-	app.get('/posts', function(req, res){
+	app.get('/api/v1/posts', function(req, res){
 		//page = req.params.p != 'undefined' ? req.params.p : 0;
 		//channel = req.user.channel != 'undefined' ? req.user.channel : null;
 		page = 0;
@@ -281,10 +283,6 @@ module.exports = function(app, mongoose) {
 		});
 	});
 
-	app.get('/posts/all/:channel',function(req, res){
-
-	});
-
 	app.get('/posts/meta', function(req, res){
 		Post.find({})
 			.populate('channel').exec(function(err, docs){
@@ -298,7 +296,7 @@ module.exports = function(app, mongoose) {
 		});
 	});
   
-  app.get('/posts/user/:id/:page?', function(req, res){
+  app.get('/api/v1/posts/user/:id/:page?', function(req, res){
     page = req.params.page || 0
     page_size = 11;
     Post.find({author: req.params.id})
@@ -315,6 +313,7 @@ module.exports = function(app, mongoose) {
       });
   });
 
+  /*
 	app.get('/posts/meta/:year/:month/:day', function(req, res){
 		year = req.params.year;
 		month = req.params.month - 1;
@@ -333,8 +332,9 @@ module.exports = function(app, mongoose) {
 			res.send(data);
 		});
 	});
+  */
 
-	app.get('/posts/:year/:month/:day/:channel/:page?/:count?', function(req, res){
+	app.get('/api/v1/posts/:year/:month/:day/:channel/:page?/:count?', function(req, res){
 
 		year = req.params.year;
 		month = req.params.month - 1;

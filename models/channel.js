@@ -58,7 +58,7 @@ module.exports = function(app, mongoose) {
 		});
 	};
 
-	app.post('/channel/create', function(req, res){
+	app.post('/api/v1/channel/create', function(req, res){
 		create( req.body, function( err, doc){
 			if( err ) throw err;
 			else{
@@ -67,7 +67,7 @@ module.exports = function(app, mongoose) {
 		});
 	});
   
-  app.get('/channels/search/:word?', function(req, res){
+  app.get('/api/v1/channels/search/:word?', function(req, res){
     var word = req.params.word || ''
     var searchRegex = new RegExp(word, 'i');
     Channel.find({name: { $regex: searchRegex }}).exec(function(err, docs){
@@ -78,7 +78,7 @@ module.exports = function(app, mongoose) {
     })
   });
   
-	app.get('/channels/:page?', function(req, res){
+	app.get('/api/v1/channels/:page?', function(req, res){
     data = {}
     page_size = url.parse(req.url, true).query.count || 20;
     page = (req.param('page') > 0 ? req.param('page') : 1) - 1;
@@ -99,13 +99,13 @@ module.exports = function(app, mongoose) {
 		});
 	});
 
-	app.get('/channel/:id', function(req, res){
+	app.get('/api/v1/channel/:id', function(req, res){
 		Channel.find({_id: req.params.id}).exec(function(err, doc){
 			res.send(doc);
 		});
 	});
 
-	app.get('/channels/suggest/:num?', function(req ,res ){
+	app.get('/api/v1/channels/suggest/:num?', function(req ,res ){
 		var num = req.params.num || 5;
 		getSuggestion(num, function(err, docs){
 			res.send(docs);
