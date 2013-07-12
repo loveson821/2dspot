@@ -1,12 +1,31 @@
-get '/posts/:year/:month/:day/:channel/:page?'
-get '/post/:id/comment/:page'
-get '/post/:id/up'
-get '/post/:id'
 
-post '/post'
+
 post '/post/:id'      -- add comment
 
 get '/account'        -- show login user
 get '/account/create' -- create user ( web )
 post '/account'       -- create user ( api )
  
+
+post /post/:id/comments
+get /post/:id/comments/:page
+get /posts
+get /posts/user/:id/:page?
+get /posts/:year/:month/:day/:channel/:page?/:count?
+get '/post/:id/up'
+get '/post/:id'
+get '/post/:id/down'
+post '/post'
+
+
+get /account/profile/:id
+get /account
+post /account/subscribe/:cid
+delete /account/subscribe/:cid
+get /account/subscribe/:cid
+
+post /channel/create
+get /channels/search/:word?
+get /channels/:page?
+get /channel/:id
+get /channels/suggest/:num?
