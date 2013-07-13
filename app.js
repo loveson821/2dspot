@@ -1,3 +1,7 @@
+require('nodetime').profile({
+    accountKey: '28a35bc06e166983bd0b05c8618055cd93f59db7', 
+    appName: '2dspot'
+  });
 var express = require('express')
   , expressValidator = require('express-validator')
   , http = require('http')
@@ -15,8 +19,8 @@ var express = require('express')
   , util = require('util')
   , LocalStrategy = require('passport-local').Strategy
   , FacebookStrategy = require('passport-facebook').Strategy
-  , ga = require('node-ga')
   , winston = require('winston')
+  //, ga = require('node-ga')
   ;
 
 
@@ -61,9 +65,9 @@ app.configure(function(){
   app.use(express.bodyParser( {keepExtensions: true, uploadDir:'./public/images/uploads'} ));
   app.use(express.methodOverride());
   app.use(express.cookieParser());
-  app.use(ga('MO-42439720-1',{
-    safe: true
-  }));
+  //app.use(ga('MO-42439720-1',{
+  //  safe: true
+  //}));
   app.use(expressValidator);
   app.use(express.session({
     cookie: { maxAge: 2592000000 },
