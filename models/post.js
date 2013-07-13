@@ -296,7 +296,7 @@ module.exports = function(app, mongoose) {
 		});
 	});
   
-  app.get('/api/v1/posts/user/:id/:page?', function(req, res){
+  app.get('/api/v1/posts/user/:id/:page?',app.ensureAuthenticated, function(req, res){
     page = req.params.page || 0
     page_size = 11;
     Post.find({author: req.params.id})
@@ -309,6 +309,7 @@ module.exports = function(app, mongoose) {
         data = {}
         data.next = docs.length > 10
         data.docs = docs.slice(0,10);
+        data.author = req.user
         res.send(data);
       });
   });

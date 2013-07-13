@@ -32,7 +32,8 @@
     "apn": "latest",
     "time": "latest",
     "connect-mongo": "latest",
-    "node-ga": "latest"
+    "node-ga": "latest",
+    "nodetime": "latest"
   },
     "engines": {
      "node": "0.10.x",
