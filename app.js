@@ -65,8 +65,8 @@ app.configure(function(){
     cookie: { maxAge: 2592000000 },
     secret: 'keyboard cat 2dspot',
     key: '2dspot.sid',
-    //store: new mongoStore({ db: '2dspot' })
-    store: app.sessionStore
+    store: new mongoStore({ db: '2dspot' })
+    //store: app.sessionStore
   }));
   app.use(flash());
   app.use(passport.initialize());

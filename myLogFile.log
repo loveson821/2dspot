@@ -9107,3 +9107,6 @@
 127.0.0.1 - - [Fri, 12 Jul 2013 11:48:37 GMT] "GET /account HTTP/1.1" 404 19 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.116 Safari/537.36"
 127.0.0.1 - - [Fri, 12 Jul 2013 11:48:38 GMT] "GET /account HTTP/1.1" 404 19 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.116 Safari/537.36"
 127.0.0.1 - - [Fri, 12 Jul 2013 11:48:43 GMT] "GET /api/v1/account HTTP/1.1" 200 233 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.116 Safari/537.36"
+127.0.0.1 - - [Sat, 13 Jul 2013 08:37:14 GMT] "GET / HTTP/1.1" 200 365 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.116 Safari/537.36"
+127.0.0.1 - - [Sat, 13 Jul 2013 08:37:18 GMT] "POST /login HTTP/1.1" 200 36 "http://localhost:3000/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.116 Safari/537.36"
+127.0.0.1 - - [Sat, 13 Jul 2013 08:37:27 GMT] "GET /api/v1/account HTTP/1.1" 200 229 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.116 Safari/537.36"
