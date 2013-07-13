@@ -15,7 +15,8 @@ var express = require('express')
   , util = require('util')
   , LocalStrategy = require('passport-local').Strategy
   , FacebookStrategy = require('passport-facebook').Strategy
-  , winston = require('winston') // logger module
+  , ga = require('node-ga')
+  , winston = require('winston')
   ;
 
 
@@ -60,6 +61,9 @@ app.configure(function(){
   app.use(express.bodyParser( {keepExtensions: true, uploadDir:'./public/images/uploads'} ));
   app.use(express.methodOverride());
   app.use(express.cookieParser());
+  app.use(ga('MO-42439720-1',{
+    safe: true
+  }));
   app.use(expressValidator);
   app.use(express.session({
     cookie: { maxAge: 2592000000 },
