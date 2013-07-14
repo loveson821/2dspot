@@ -212,8 +212,8 @@ module.exports = function(app, mongoose) {
 	});
 
 	app.get('/api/v1/post/:id/up', app.ensureAuthenticated, function(req, res){
-		upThumb(req.params.id, req.user._id, res, function(err, doc){
-		  if(err){
+		upThumb(req.params.id, req.user.id, res, function(err, doc){
+		  if(err || !doc){
         res.send({'success': false, 'error': err})
       }else{
         res.send({'success': true, 'vote': doc.meta.votes})
@@ -222,8 +222,8 @@ module.exports = function(app, mongoose) {
 	});
   
   app.get('/api/v1/post/:id/down', app.ensureAuthenticated, function(req, res){
-		downThumb(req.params.id, req.user._id, res, function(err, doc){
-		  if(err){
+		downThumb(req.params.id, req.user.id, res, function(err, doc){
+		  if(err || !doc){
         res.send({'success': false, 'error': err})
       }else{
         res.send({'success': true, 'vote': doc.meta.votes})
