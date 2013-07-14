@@ -300,16 +300,16 @@ module.exports = function(app, mongoose) {
     page = req.params.page || 0
     page_size = 11;
     Post.find({author: req.params.id})
-      .select('-comments')
+      .select('-comments -upVoters -downVoters')
       .sort('-date')
       .limit(page_size)
       .skip(page * page_size)
       .populate('channel', 'name')
+      .populate('author', 'email _id name photoUrl')
       .exec(function(err, docs){
         data = {}
         data.next = docs.length > 10
         data.docs = docs.slice(0,10);
-        data.author = req.user
         res.send(data);
       });
   });
