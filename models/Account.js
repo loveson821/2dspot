@@ -326,8 +326,8 @@ module.exports = function(app, config, mongoose, nodemailer) {
     });
   });
   
-  app.post('/api/v1/account/settings', app.ensureAuthenticated, function(req, res){
-    Account.findOne({_id: req.user._id}).exec(function(err, acc){
+  app.put('/api/v1/account/settings', app.ensureAuthenticated, function(req, res){
+    Account.findOne({_id: req.user.id}).exec(function(err, acc){
       if(err) res.send({'success': false, 'error': err })
       else{
         acc.settings = _.extend(acc.settings, req.body)

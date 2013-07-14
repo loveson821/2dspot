@@ -1,7 +1,3 @@
-require('nodetime').profile({
-    accountKey: '28a35bc06e166983bd0b05c8618055cd93f59db7', 
-    appName: '2dspot'
-  });
 var express = require('express')
   , expressValidator = require('express-validator')
   , http = require('http')
@@ -19,10 +15,17 @@ var express = require('express')
   , util = require('util')
   , LocalStrategy = require('passport-local').Strategy
   , FacebookStrategy = require('passport-facebook').Strategy
+  , expressWinston = require('express-winston')
   , winston = require('winston')
-  //, ga = require('node-ga')
   ;
+  
+require('winston-logio')
 
+winston.add( winston.transports.Logio, {
+  port: 28777,
+  node_name: '2dspot',
+  host: '127.0.0.1'
+})
 
 var app         = express();
 app.server      = http.createServer(app);   // Create an http server
@@ -38,15 +41,20 @@ var config = {
     port: 13685
   },
 
-  logFile: fs.createWriteStream('./myLogFile.log', {flags: 'a'}), //use {flags: 'w'} to open in write mode
+  
+  logFile: fs.createWriteStream('./myLogFile.log', {flags: 'a'}) //use {flags: 'w'} to open in write mode
+  /*
   logger: new (winston.Logger)({
     transports: [
       new (winston.transports.Console)(),
       new (winston.transports.File)({ filename: 'somefile.log' })
     ]
-  })
+  })*/
 };
+
 app.config = config;
+
+
 
 app.ensureAuthenticated = function(req, res, next) {
   if (req.isAuthenticated()) { return next(); }
@@ -62,6 +70,12 @@ app.configure(function(){
   app.set('view engine', 'ejs');
   app.use(express.favicon());
   app.use(express.logger({stream: config.logFile}));
+  app.use(expressWinston.logger({
+    transports: [
+      new winston.transports.Logio(),
+      new (winston.transports.File)({ filename: 'somefile.log' })
+    ]
+  }));
   app.use(express.bodyParser( {keepExtensions: true, uploadDir:'./public/images/uploads'} ));
   app.use(express.methodOverride());
   app.use(express.cookieParser());
