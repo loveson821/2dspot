@@ -34,7 +34,8 @@
     "connect-mongo": "latest",
     "node-ga": "latest",
     "winston-logio": "latest",
-    "express-winston": "latest"
+    "express-winston": "latest",
+    "raven": "latest"
   },
     "engines": {
      "node": "0.10.x",

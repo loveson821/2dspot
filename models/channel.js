@@ -58,7 +58,7 @@ module.exports = function(app, mongoose) {
 		});
 	};
 
-	app.post('/api/v1/channel/create', function(req, res){
+	app.post('/api/v1/channel/create', app.ensureAuthenticated, function(req, res){
 		create( req.body, function( err, doc){
 			if( err ) throw err;
 			else{

@@ -136,6 +136,7 @@ app.models = {}
 app.models.Account = require('./models/Account')(app, config, mongoose, nodemailer);
 app.models.Channel = require('./models/channel')(app, mongoose);
 app.models.Post = require('./models/post')(app, mongoose)
+app.models.Pin = require('./models/pin')(app, mongoose)
 
 //models.Account.register("loveson821@gmail.com","123","Ng","Ka Long");
 

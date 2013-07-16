@@ -114,14 +114,16 @@ module.exports = function(app, mongoose) {
 		});
   };
 
-  var upThumb = function(postId, userId, res, callback){
-  	Post.findOneAndUpdate({_id: postId, upVoters: { $ne: userId }}, {$inc: {"meta.votes": 1}, $push: { upVoters: userId} }, function(err, doc){
+  var upThumb = function(postId, userId, callback){
+  	Post.findOneAndUpdate({_id: postId, upVoters: { $ne: userId }, downVoters: { $ne: userId }}, 
+                          {$inc: {"meta.votes": 1}, $push: { upVoters: userId} }, 
+    function(err, doc){
   		callback(err, doc)
   	});
   };
 
-  var downThumb = function(postId, userId, res, callback){
-  	Post.findOneAndUpdate({_id: postId, downVoters: { $ne: userId }}, {$inc: {"meta.votes": -1}, $push: { downVoters: userId} }, function(err, doc){
+  var downThumb = function(postId, userId, callback){
+  	Post.findOneAndUpdate({_id: postId, upVoters: { $ne: userId }, downVoters: { $ne: userId }}, {$inc: {"meta.votes": -1}, $push: { downVoters: userId} }, function(err, doc){
   	  callback(err, doc);
   	});
   };
@@ -212,7 +214,7 @@ module.exports = function(app, mongoose) {
 	});
 
 	app.get('/api/v1/post/:id/up', app.ensureAuthenticated, function(req, res){
-		upThumb(req.params.id, req.user.id, res, function(err, doc){
+		upThumb(req.params.id, req.user.id, function(err, doc){
 		  if(err || !doc){
         res.send({'success': false, 'error': err})
       }else{
@@ -222,7 +224,7 @@ module.exports = function(app, mongoose) {
 	});
   
   app.get('/api/v1/post/:id/down', app.ensureAuthenticated, function(req, res){
-		downThumb(req.params.id, req.user.id, res, function(err, doc){
+		downThumb(req.params.id, req.user.id, function(err, doc){
 		  if(err || !doc){
         res.send({'success': false, 'error': err})
       }else{
@@ -314,27 +316,6 @@ module.exports = function(app, mongoose) {
       });
   });
 
-  /*
-	app.get('/posts/meta/:year/:month/:day', function(req, res){
-		year = req.params.year;
-		month = req.params.month - 1;
-		day = req.params.day;
-		start = new Date(year,month,day);
-		end = new Date(year,month,day);
-		end.setDate(end.getDate()+1);
-
-		Post.find({date: { $gt: start, $lte :end }})
-			.populate('channel','name').exec(function(err, docs){
-			data = {};
-			docs.forEach(function(elem, index, array){
-				data[elem.channel.name] = (data[elem.channel.name] ? data[elem.channel.name] : 0) + 1;
-			});
-
-			res.send(data);
-		});
-	});
-  */
-
 	app.get('/api/v1/posts/:year/:month/:day/:channel/:page?/:count?', function(req, res){
 
 		year = req.params.year;
@@ -373,18 +354,17 @@ module.exports = function(app, mongoose) {
   						score = elem.rank();
   						elem = elem.toObject();
   						elem.score = score;
+              
               if( req.user ){
                 elem.voted = elem.upVoters.indexOf(req.user.id) >= 0 ? 1 : (elem.downVoters.indexOf(req.user.id) < 0 ? -1 : 0)
               }
               else
                 elem.voted = -1
+                
   						delete elem.upVoters;
               delete elem.downVoters;
-              //delete elem.comments;
   						array[index] = elem;
-  						//elem.comments_len = elem.comments.length;
-  						//elem.comments_next = elem.comments.length > page_size;
-  						//elem.comments = elem.comments.slice(0,page_size_end);
+
 						  
   					});
   					data.docs.sort(compare);
