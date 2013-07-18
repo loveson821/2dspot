@@ -1,6 +1,11 @@
-var time = require('time')
+var raven = require('raven');
 
-end = new time.Date(2013,6,11, 'UTC');
-console.log(end.toString())
-end.setDate(end.getDate()+1);
-console.log(end.toString())
+var client = new raven.Client('https://916ecea72d7844c38a1aa6d3ba08e649:dcf289839efc49dea4b58d9c8d192670@app.getsentry.com/10745');
+
+client.patchGlobal();
+
+// record a simple message
+client.captureMessage('hello world!')
+
+// capture an exception
+client.captureError(new Error('Uh oh!!'));

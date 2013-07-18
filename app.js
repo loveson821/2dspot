@@ -19,17 +19,21 @@ var express = require('express')
   , winston = require('winston')
   ;
   
-require('winston-logio')
-
-winston.add( winston.transports.Logio, {
-  port: 28777,
-  node_name: '2dspot',
-  host: '127.0.0.1'
-})
 
 var app         = express();
 app.server      = http.createServer(app);   // Create an http server
 app.sessionStore = new MemoryStore();       // Create a session store to share between methods
+
+var logentries = require('node-logentries');
+var log = logentries.logger({
+  token:'7cbb5061-0769-4718-bcb1-2af147f6fdcc'
+});
+
+var logStream = {
+    write: function(message,encoding) {
+      log.info(message.replace('\n', ''));
+    }
+};
 
 //Configurations
 var config = {
@@ -40,7 +44,6 @@ var config = {
     pass: '2dspot',
     port: 13685
   },
-
   
   logFile: fs.createWriteStream('./myLogFile.log', {flags: 'a'}) //use {flags: 'w'} to open in write mode
   /*
@@ -69,13 +72,16 @@ app.configure(function(){
   app.use(express.static(path.join(__dirname, 'public')));
   app.set('view engine', 'ejs');
   app.use(express.favicon());
-  app.use(express.logger({stream: config.logFile}));
-  app.use(expressWinston.logger({
-    transports: [
-      new winston.transports.Logio(),
-      new (winston.transports.File)({ filename: 'somefile.log' })
-    ]
+  app.use(express.logger({
+    format: 'dev', //The format you prefer. This is optional. Not setting this will output the standard log format  
+    stream: logStream //The variable we defined above. The stream method calls the write method.
   }));
+  // app.use(expressWinston.logger({
+  //   transports: [
+  //     new winston.transports.Logio(),
+  //     new (winston.transports.File)({ filename: 'somefile.log' })
+  //   ]
+  // }));
   app.use(express.bodyParser( {keepExtensions: true, uploadDir:'./public/images/uploads'} ));
   app.use(express.methodOverride());
   app.use(express.cookieParser());
@@ -111,25 +117,9 @@ app.configure('development', function(){
   app.use(express.errorHandler());
 });
 
-// Import the routes -- * All controllers under ./routes/
-/*
-fs.readdirSync('routes').forEach(function(file) {
-  if ( file[0] == '.' ) return;
-  var routeName = file.substr(0, file.indexOf('.'));
-  require('./routes/' + routeName)(app, models);
-});
-*/
 
 // Model needs plugins
 app.redis = require('./plugins/redis')(app, config, mongoose);
-
-// Import the models
-// app.models = {
-//   Account: require('./models/Account')(app, config, mongoose, nodemailer),
-//   Channel: require('./models/channel')(app, mongoose),
-//   Post: require('./models/post')(app, mongoose)
-//   //Comment: require('./models/comment')(app, mongoose)
-// };
 
 
 app.models = {}
@@ -138,26 +128,9 @@ app.models.Channel = require('./models/channel')(app, mongoose);
 app.models.Post = require('./models/post')(app, mongoose)
 app.models.Pin = require('./models/pin')(app, mongoose)
 
-//models.Account.register("loveson821@gmail.com","123","Ng","Ka Long");
-
-
-// var controllers = {
-//   AccountController: require('./routes/AccountController')(app, models.Account ),
-//   PostController: require('./routes/PostController')(app, models.Post)
-// }
-
-
 app.get('/', function(req, res){
   res.render('index', { user: req.user });
 });
-
-/*
-app.get('/account', ensureAuthenticated, function(req, res){
-  res.send(req.user);
-  //console.log(req.user);
-  //res.render('account', { user: req.user });
-});
-*/
 
 app.get('/login', function(req, res){
   res.render('login', { user: req.user, message: req.flash('error') });
@@ -171,12 +144,17 @@ app.get('/logout', function(req, res){
 require('./plugins/pass.js')(app,passport,LocalStrategy, app.models.Account);
 require('./plugins/pass-facebook.js')(app, passport, FacebookStrategy, app.models.Account);
 
-//app.listen(3000);
+app.use(app.router)
+// app.use(function(err, req, res, next){
+//   raven.middleware.express('https://916ecea72d7844c38a1aa6d3ba08e649:dcf289839efc49dea4b58d9c8d192670@app.getsentry.com/10745')
+//   console.log("It's working")
+//   next()
+// })
 
-// assume "not found" in the error msgs
-// is a 404. this is somewhat silly, but
-// valid, you can do whatever you like, set
-// properties, use instanceof etc.
+var raven = require('raven');
+var client = new raven.Client('https://916ecea72d7844c38a1aa6d3ba08e649:dcf289839efc49dea4b58d9c8d192670@app.getsentry.com/10745');
+client.patchGlobal();
+
 app.use(function(err, req, res, next){
   // treat as 404
   if (err.message
@@ -188,6 +166,7 @@ app.use(function(err, req, res, next){
   // log it
   // send emails if you want
   console.error(err.stack)
+  client.captureError(err)
 
   // error page
   res.status(500).render('500', { error: err.stack })

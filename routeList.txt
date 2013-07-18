@@ -29,3 +29,6 @@ get /channels/search/:word?
 get /channels/:page?
 get /channel/:id
 get /channels/suggest/:num?
+
+get /pinb/:page?
+post /pinb -- { postId: id }

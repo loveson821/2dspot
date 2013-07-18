@@ -24,7 +24,7 @@
     "redis": "0.8.3",
     "winston": "0.7.1",
     "formidable": "1.0.14",
-    "ejs": "0.8.3",
+    "ejs": "latest",
     "underscore": "latest",
     "redis": "latest",
     "hiredis": "latest",
@@ -35,7 +35,9 @@
     "node-ga": "latest",
     "winston-logio": "latest",
     "express-winston": "latest",
-    "raven": "latest"
+    "raven": "latest",
+    "mersenne": "latest",
+    "node-logentries": "latest"
   },
     "engines": {
      "node": "0.10.x",
