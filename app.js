@@ -73,7 +73,7 @@ app.configure(function(){
   app.set('view engine', 'ejs');
   app.use(express.favicon());
   app.use(express.logger({
-    format: ':remote-addr - - [:date] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" :response-time ms', //The format you prefer. This is optional. Not setting this will output the standard log format  
+    format: ':remote-addr ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" :response-time ms', //The format you prefer. This is optional. Not setting this will output the standard log format  
     stream: logStream //The variable we defined above. The stream method calls the write method.
   }));
   // app.use(expressWinston.logger({
@@ -151,9 +151,9 @@ app.use(app.router)
 //   next()
 // })
 
-var raven = require('raven');
-var client = new raven.Client('https://916ecea72d7844c38a1aa6d3ba08e649:dcf289839efc49dea4b58d9c8d192670@app.getsentry.com/10745');
-client.patchGlobal();
+// var raven = require('raven');
+// var client = new raven.Client('https://916ecea72d7844c38a1aa6d3ba08e649:dcf289839efc49dea4b58d9c8d192670@app.getsentry.com/10745');
+// client.patchGlobal();
 
 app.use(function(err, req, res, next){
   // treat as 404

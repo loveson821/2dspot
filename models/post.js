@@ -71,6 +71,8 @@ module.exports = function(app, mongoose) {
 		Channel.findOne({name: obj.channel}).select('_id').lean().exec(function(err, doc){
       if(err){
         callback(err, null)
+      }else if(!doc){
+        callback('no channel', null)
       }
       else{
   			obj.channel = doc._id;
@@ -161,7 +163,7 @@ module.exports = function(app, mongoose) {
       ei.thumbnails(paths, 'undefined', function(result){
         if( result ){
           create(req.body, function(err, doc){
-            if(err) res.send({'success': false, 'err': 'save post fail'})
+            if(err) res.send({'success': false, 'err': err, 'note':'create post fail'})
             else{
               res.send({'success': true})
             }
