@@ -73,7 +73,7 @@ app.configure(function(){
   app.set('view engine', 'ejs');
   app.use(express.favicon());
   app.use(express.logger({
-    format: 'dev', //The format you prefer. This is optional. Not setting this will output the standard log format  
+    format: ':remote-addr - - [:date] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" :response-time ms', //The format you prefer. This is optional. Not setting this will output the standard log format  
     stream: logStream //The variable we defined above. The stream method calls the write method.
   }));
   // app.use(expressWinston.logger({
@@ -166,7 +166,7 @@ app.use(function(err, req, res, next){
   // log it
   // send emails if you want
   console.error(err.stack)
-  client.captureError(err)
+  //client.captureError(err)
 
   // error page
   res.status(500).render('500', { error: err.stack })
