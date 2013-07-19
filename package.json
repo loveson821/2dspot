@@ -1,6 +1,6 @@
 {
-  "name": "chat-er",
-  "version": "0.0.1",
+  "name": "2dspot",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
   "start": "node app"
