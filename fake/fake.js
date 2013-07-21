@@ -93,7 +93,7 @@ var PostSchema = new mongoose.Schema({
       //activity:  [Status]  //  All status updates including friends
   });
 
-  PostSchema.index({"date": -1, "channel" : 1})
+  PostSchema.index({"date": -1, "channel" : 1, "author": 1})
 
 var Post = mongoose.model('Post', PostSchema);
 

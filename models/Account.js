@@ -340,6 +340,21 @@ module.exports = function(app, config, mongoose, nodemailer) {
       }
     })
   });
+
+    app.get('/mapred', function(req, res){
+    var o = {};
+    o.map = function () { emit(this.name, this.name.length) }
+    o.reduce = function (k, vals) { return vals }
+    o.query = { $where: "this.name.length < 15" }
+    o.out = { replace: 'scores' }
+    o.verbose = true;
+    Account.mapReduce(o, function (err, model, stats) {
+      console.log('map reduce took %d ms', stats.processtime)
+      model.find().where('value').gt(10).exec(function (err, docs) {
+        res.send(docs);
+      });
+    })
+  });
   
   return {
     findById: findById,

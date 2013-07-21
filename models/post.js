@@ -8,9 +8,6 @@ module.exports = function(app, mongoose) {
   var _ = require('underscore')
       , time = require('time');
 
-	// var fileUploader = require('../plugins/fileUploader.js')(app);
-	// var formidable = require('formidable');
-
 	var PostSchema = new mongoose.Schema({
 		title:  String,
 		author: {type: Schema.ObjectId, ref: 'Account'},
@@ -34,9 +31,20 @@ module.exports = function(app, mongoose) {
 	    //activity:  [Status]  //  All status updates including friends
 	});
   
-  PostSchema.index({"date": -1, "channel" : 1})
-  //PostSchema.set('redisCache', true)
-  
+  PostSchema.index({"date": -1, "channel" : 1, "author": 1})
+
+  // Virtual attributes
+
+  PostSchema
+    .virtual('score')
+    .get(function() { return this.rank() })
+
+  // Output format
+  PostSchema.set('toJSON', {
+    virtuals: true
+  })
+
+  // Pre save
   PostSchema.pre('save', function(next) {
 
     if (!this.channel){
@@ -191,7 +199,7 @@ module.exports = function(app, mongoose) {
 
 	
 	app.get('/api/v1/post/:id', function(req, res){
-		Post.findOne({_id: req.params.id}).populate('author','_id name photoUrl').lean().exec(function(err,doc){
+		Post.findOne({_id: req.params.id}).select('-comments').populate('author','_id name photoUrl').lean().exec(function(err,doc){
 			if(err || !doc ) res.send({'success': false, 'error': 'Not found'})
       else{
 
@@ -202,8 +210,7 @@ module.exports = function(app, mongoose) {
         else
           doc.voted = -1
           doc.downVoters = doc.downVoters.length
-          doc.upVoters = doc.upVoters.length 
-          delete doc.comments
+          doc.upVoters = doc.upVoters.length
 
         res.send(doc);
       }
@@ -318,6 +325,15 @@ module.exports = function(app, mongoose) {
       });
   });
 
+  var rank = function(date, votes){
+    t = (date - new Date(2013,3,25))/1000;
+    logV = Math.log(Math.abs(votes)+1) / Math.log(5);
+    y = votes < 0 ? -1 : 1;
+
+    return logV * y + ( t/45000 );
+  };
+
+
 	app.get('/api/v1/posts/:year/:month/:day/:channel/:page?/:count?', function(req, res){
 
 		year = req.params.year;
@@ -335,53 +351,65 @@ module.exports = function(app, mongoose) {
 		Channel.findOne({ name: channel}).exec(function(err, cha){
 			if( err || !cha ) { res.send({ 'status': 404 }); }
       else{
-  			Post.find({date: { $gt: start, $lte :end }, channel: cha._id})
-          .select('-comments')
-  				.populate({
-  					path: 'channel', 
-  					match: { name : channel },
-  					select: 'name'
-  				})
-  				//.populate('author comments.author').exec(function(err, docs){
-  				.populate('author','email _id name photoUrl').exec(function(err, docs){
-          	if(err || !docs) { res.send({ 'status': 404 }); }
-  					if(docs.length == 0){ console.log('should load redis data');}
-  					data = {};
-  					data.meta = {};
-  					data.meta.count = docs.length;
-  					data.meta.next = data.meta.count - page*page_size > 0;
-  					data.docs = docs;
+        var o = {};
+        // o.map = function () { emit({score: rank(this.date, this.meta.votes), id: this._id}, 1) }
+        o.map = function () { emit(this._id, rank(this.date, this.meta.votes)) }
+        o.query = {date: { $gt: start, $lte :end }, channel: cha._id}
+        o.out = { inline : 1 }
+        o.scope = { rank : rank}
+        o.verbose = true;
+        // o.limit = 10;
 
-  					data.docs.forEach(function(elem, index, array){
-  						score = elem.rank();
-  						elem = elem.toObject();
-  						elem.score = score;
-              
-              if( req.user ){
-                elem.voted = elem.upVoters.indexOf(req.user.id) >= 0 ? 1 : (elem.downVoters.indexOf(req.user.id) < 0 ? -1 : 0)
-              }
-              else
-                elem.voted = -1
+        Post.mapReduce(o, function (err, vals, stats) {
+          // console.log(err)
+          console.log('map reduce took %d ms', stats.processtime)
+          count = vals.length;
+          vals = vals.sort(function(a,b) { 
+                      return a.value - b.value;
+                  })
+                  .reverse().slice((page-1)*page_size, page*page_size)
+                  .map( function(item){
+                    return item._id;
+                  })
+          Post.find({ _id: {$in: vals }})
+            .select('-comments')
+           .populate({
+             path: 'channel', 
+             match: { name : channel },
+             select: 'name'
+           })
+          .populate('author','email _id name photoUrl').exec(function(err, docs){
+            if(err || !docs) { res.send({ 'status': 404 }); }
+            data = {};
+            data.meta = {};
+            data.meta.count = count;
+            data.meta.next = data.meta.count - page*page_size > 0;
+            data.docs = docs;
+
+            data.docs.forEach(function(elem, index, array){
+              score = elem.rank();
+              elem = elem.toObject();
+              elem.score = score;
                 
-  						delete elem.upVoters;
-              delete elem.downVoters;
-  						array[index] = elem;
-
-						  
-  					});
-  					data.docs.sort(compare);
-  					data.docs = docs.slice((page-1)*page_size, page*page_size);
-
-  					res.send(data);
-  			});
+              if( req.user ){
+                elem.voted = _.contains(elem.upVoters.map(function(x){ return x.toString()}), req.user.id) ? 1 : 
+                            (_.contains(elem.downVoters.map(function(x){ return x.toString()}), req.user.id)  ? 0 : -1)
+              }
+              else{
+                elem.voted = -1
+              }
+                
+              elem.upVoters = elem.upVoters.length;
+              elem.downVoters = elem.downVoters.length;
+              array[index] = elem;
+               
+             }) 
+             res.send(data)
+          })
+        })
       }
-			
+    })
 
-		});
-
-		
-		
-		
 	});
 
 	return {
