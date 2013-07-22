@@ -283,12 +283,12 @@ module.exports = function(app, config, mongoose, nodemailer) {
   // add subscribe
   app.post('/api/v1/account/subscribe/:cid', app.ensureAuthenticated, function(req, res){ 
     Account.findOneAndUpdate({_id: req.user._id, subscribes: { $ne: req.params.cid }}, {$push: {subscribes: req.params.cid} }) 
-    .exec(function(err, doc){
+    .populate('subscribes').exec(function(err, doc){
       if(err){
         res.send({'success': false, 'error': err });
       }else{
         if(doc) 
-          res.send({'success': true});
+          res.send({'success': true, 'doc': doc});
         else
           res.send({'success': false, 'error': 'Already existed'})
       }
@@ -297,8 +297,9 @@ module.exports = function(app, config, mongoose, nodemailer) {
   });
   
   // remove subscribe
-  app.delete('/api/v1/account/subscribe/:cid', app.ensureAuthenticated, function(req, res){
-    Account.findOne({_id: req.user._id}).exec(function(err, acc){
+  app.get('/api/v1/account/subscribe/:cid', app.ensureAuthenticated, function(req, res){
+    Account.findOne({_id: req.user._id})
+    .exec(function(err, acc){
       if( acc.subscribes.indexOf(req.params.cid) == -1 ){
         res.send({'success': false, 'error': 'Channel not subscribed' })
       }
@@ -307,8 +308,11 @@ module.exports = function(app, config, mongoose, nodemailer) {
         acc.subscribes.splice(index,index+1);
         acc.save(function(err, doc){
           if(err || !doc) res.send({'success': false, 'error': err })
-          else
-            res.send({'success': true});
+          else{
+            Account.findOne({_id: doc._id}).populate('subscribes').exec(function(err, doc){
+              res.send({'success': true, 'doc': doc})
+            })
+          }
         });
         
       }

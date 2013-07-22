@@ -146,9 +146,9 @@ require('./plugins/pass-facebook.js')(app, passport, FacebookStrategy, app.model
 
 app.use(app.router)
 
-// var raven = require('raven');
-// var client = new raven.Client('https://916ecea72d7844c38a1aa6d3ba08e649:dcf289839efc49dea4b58d9c8d192670@app.getsentry.com/10745');
-// client.patchGlobal();
+var raven = require('raven');
+var client = new raven.Client('https://916ecea72d7844c38a1aa6d3ba08e649:dcf289839efc49dea4b58d9c8d192670@app.getsentry.com/10745');
+client.patchGlobal();
 
 app.use(function(err, req, res, next){
   // treat as 404
@@ -161,7 +161,7 @@ app.use(function(err, req, res, next){
   // log it
   // send emails if you want
   console.error(err.stack)
-  // client.captureError(err)
+  client.captureError(err)
 
   // error page
   res.status(500).render('500', { error: err.stack })
