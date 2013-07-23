@@ -29,7 +29,7 @@ module.exports = function(app, mongoose) {
 	};
 
 	var normalFilter = function(x){
-		y = {}
+		var y = {}
 		y._id = x._id;
 		y.name = x.name;
     y.description = x.description;
@@ -79,9 +79,9 @@ module.exports = function(app, mongoose) {
   });
   
 	app.get('/api/v1/channels/:page?', function(req, res){
-    data = {}
-    page_size = url.parse(req.url, true).query.count || 20;
-    page = (req.param('page') > 0 ? req.param('page') : 1) - 1;
+    var data = {}
+    var page_size = url.parse(req.url, true).query.count || 20;
+    var page = (req.param('page') > 0 ? req.param('page') : 1) - 1;
 		Channel.find({}).limit(page_size).skip(page*page_size).exec(function(err ,docs){
       if( err ) res.send({'success': false, 'error': err })
       else{

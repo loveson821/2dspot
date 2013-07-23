@@ -57,9 +57,9 @@ module.exports = function(app, mongoose) {
   })
 
 	PostSchema.methods.rank = function(){
-		t = (this.date - new Date(2013,3,25))/1000;
-		logV = Math.log(Math.abs(this.meta.votes)+1) / Math.log(5);
-		y = this.meta.votes < 0 ? -1 : 1;
+		var t = (this.date - new Date(2013,3,25))/1000;
+		var logV = Math.log(Math.abs(this.meta.votes)+1) / Math.log(5);
+		var y = this.meta.votes < 0 ? -1 : 1;
 
 		return logV * y + ( t/45000 );
 	};
@@ -113,7 +113,6 @@ module.exports = function(app, mongoose) {
 
 	var findById = function(accountId, callback) {
 		Post.findOne({_id:accountId}, function(err,doc) {
-			console.log("doc: " + doc);
 			callback(err,doc);
 		});
 	};
@@ -151,12 +150,12 @@ module.exports = function(app, mongoose) {
     
     if( !_.isNull(req.files.pics) ){
       var paths = []
-      req.body.pics = []
+      var req.body.pics = []
       
       if( _.isArray(req.files.pics) ){
-        len = req.files.pics.length
+        var len = req.files.pics.length
         for( var i = 0; i < len; ++i ){
-          file = req.files.pics[i]
+          var file = req.files.pics[i]
           paths.push( req.files.pics[i].path )
           req.body.pics.push( domain + req.files.pics[i].path.replace('public','') )
         }
@@ -245,7 +244,7 @@ module.exports = function(app, mongoose) {
 	app.post('/api/v1/post/:id/comments', app.ensureAuthenticated, function(req,res){
 		if( req.body ){
 
-			com = req.body;
+			var com = req.body;
 			com.date = new Date();
 			com.author = req.user;
 			addComment( req.params.id, com , function(err){
@@ -260,8 +259,8 @@ module.exports = function(app, mongoose) {
 	});
 
 	app.get('/api/v1/post/:id/comments/:page?',function(req, res){
-		postId = req.params.id;
-		page = req.params.page || 1;
+		var postId = req.params.id;
+		var page = req.params.page || 1;
 		Post.find({_id: postId}).populate('comments.author','_id name photoUrl').exec(function(err, doc){
 			doc = doc[0];
 			data = {}
@@ -276,8 +275,8 @@ module.exports = function(app, mongoose) {
 	app.get('/api/v1/posts', function(req, res){
 		//page = req.params.p != 'undefined' ? req.params.p : 0;
 		//channel = req.user.channel != 'undefined' ? req.user.channel : null;
-		page = 0;
-		page_size = 100;
+		var page = 0;
+		var page_size = 100;
 		Post.find({}).sort('-date').skip(page_size*page).limit(page_size)
 			.populate('author comments.author').exec(function(err, docs){
 			docs.forEach(function(elem, index, array){
@@ -308,8 +307,8 @@ module.exports = function(app, mongoose) {
 	});
   
   app.get('/api/v1/posts/user/:id/:page?',app.ensureAuthenticated, function(req, res){
-    page = req.params.page || 0
-    page_size = 11;
+    var page = req.params.page || 0
+    var page_size = 11;
     Post.find({author: req.params.id})
       .select('-comments -upVoters -downVoters')
       .sort('-date')
@@ -326,9 +325,9 @@ module.exports = function(app, mongoose) {
   });
 
   var rank = function(date, votes){
-    t = (date - new Date(2013,3,25))/1000;
-    logV = Math.log(Math.abs(votes)+1) / Math.log(5);
-    y = votes < 0 ? -1 : 1;
+    var t = (date - new Date(2013,3,25))/1000;
+    var logV = Math.log(Math.abs(votes)+1) / Math.log(5);
+    var y = votes < 0 ? -1 : 1;
 
     return logV * y + ( t/45000 );
   };
@@ -336,16 +335,16 @@ module.exports = function(app, mongoose) {
 
 	app.get('/api/v1/posts/:year/:month/:day/:channel/:page?/:count?', function(req, res){
 
-		year = req.params.year;
-		month = req.params.month - 1;
-		day = req.params.day;
-		channel = req.params.channel.replace('-',' ');
-		page = req.params.page || 1;
-		page_size = req.params.count || 20;
-		page_size_end = page_size + 1;
+		var year = req.params.year;
+		var month = req.params.month - 1;
+		var day = req.params.day;
+		var channel = req.params.channel.replace('-',' ');
+		var page = req.params.page || 1;
+		var page_size = req.params.count || 20;
+		var page_size_end = page_size + 1;
 
-		start = new time.Date(year,month,day, 'UTC');
-		end = new time.Date(year,month,day, 'UTC');
+		var start = new time.Date(year,month,day, 'UTC');
+		var end = new time.Date(year,month,day, 'UTC');
 		end.setDate(end.getDate()+1);
 
 		Channel.findOne({ name: channel}).exec(function(err, cha){
@@ -363,7 +362,7 @@ module.exports = function(app, mongoose) {
         Post.mapReduce(o, function (err, vals, stats) {
           // console.log(err)
           console.log('map reduce took %d ms', stats.processtime)
-          count = vals.length;
+          var count = vals.length;
           vals = vals.sort(function(a,b) { 
                       return a.value - b.value;
                   })
@@ -380,14 +379,14 @@ module.exports = function(app, mongoose) {
            })
           .populate('author','email _id name photoUrl').exec(function(err, docs){
             if(err || !docs) { res.send({ 'status': 404 }); }
-            data = {};
+            var data = {};
             data.meta = {};
             data.meta.count = count;
             data.meta.next = data.meta.count - page*page_size > 0;
             data.docs = docs;
 
             data.docs.forEach(function(elem, index, array){
-              score = elem.rank();
+              var score = elem.rank();
               elem = elem.toObject();
               elem.score = score;
                 

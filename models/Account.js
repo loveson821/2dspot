@@ -153,7 +153,6 @@ module.exports = function(app, config, mongoose, nodemailer) {
   };
 
   var findOrRegister = function(userObj, callback){
-    console.log(userObj.name);
     Account.findOne({email: userObj.email}).exec(function(err, user){
       if(err){ res.send(400); }
       if(!user){  // User not exist in our database
@@ -175,7 +174,7 @@ module.exports = function(app, config, mongoose, nodemailer) {
   var localRegister = function(email, password, name, callback) {
     var password;
     if( password){
-      shaSum = crypto.createHash('sha256');
+      var shaSum = crypto.createHash('sha256');
       shaSum.update(password);
       password = shaSum.digest('hex');
     }
@@ -205,7 +204,7 @@ module.exports = function(app, config, mongoose, nodemailer) {
 
   var removeSubscribe = function(userId, channel){
     Account.findOne({_id: userId}).exec(function(err, account){
-      index = account.subscribes.indexOf(channel);
+      var index = account.subscribes.indexOf(channel);
       account.subscribes.splice(index,index);
     });
   };
@@ -252,7 +251,6 @@ module.exports = function(app, config, mongoose, nodemailer) {
   app.post('/api/v1/account', function(req, res){
 
     req.params = req.body;
-    console.log(req.body);
 
     req.assert('email', 'required').notEmpty();
     req.assert('email', 'valid email required').isEmail();
@@ -297,7 +295,7 @@ module.exports = function(app, config, mongoose, nodemailer) {
   });
   
   // remove subscribe
-  app.get('/api/v1/account/subscribe/:cid', app.ensureAuthenticated, function(req, res){
+  app.delete('/api/v1/account/subscribe/:cid', app.ensureAuthenticated, function(req, res){
     Account.findOne({_id: req.user._id})
     .exec(function(err, acc){
       if( acc.subscribes.indexOf(req.params.cid) == -1 ){
@@ -345,20 +343,20 @@ module.exports = function(app, config, mongoose, nodemailer) {
     })
   });
 
-    app.get('/mapred', function(req, res){
-    var o = {};
-    o.map = function () { emit(this.name, this.name.length) }
-    o.reduce = function (k, vals) { return vals }
-    o.query = { $where: "this.name.length < 15" }
-    o.out = { replace: 'scores' }
-    o.verbose = true;
-    Account.mapReduce(o, function (err, model, stats) {
-      console.log('map reduce took %d ms', stats.processtime)
-      model.find().where('value').gt(10).exec(function (err, docs) {
-        res.send(docs);
-      });
-    })
-  });
+  // app.get('/mapred', function(req, res){
+  //   var o = {};
+  //   o.map = function () { emit(this.name, this.name.length) }
+  //   o.reduce = function (k, vals) { return vals }
+  //   o.query = { $where: "this.name.length < 15" }
+  //   o.out = { replace: 'scores' }
+  //   o.verbose = true;
+  //   Account.mapReduce(o, function (err, model, stats) {
+  //     console.log('map reduce took %d ms', stats.processtime)
+  //     model.find().where('value').gt(10).exec(function (err, docs) {
+  //       res.send(docs);
+  //     });
+  //   })
+  // });
   
   return {
     findById: findById,
