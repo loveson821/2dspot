@@ -150,7 +150,7 @@ module.exports = function(app, mongoose) {
     
     if( !_.isNull(req.files.pics) ){
       var paths = []
-      var req.body.pics = []
+      req.body.pics = []
       
       if( _.isArray(req.files.pics) ){
         var len = req.files.pics.length

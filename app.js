@@ -104,7 +104,7 @@ app.configure(function(){
       if (err) throw err;
   });
   
-  mongoose.set('debug', true);
+  // mongoose.set('debug', true);
   
   var db = mongoose.connection;
   //db.on('error', console.error.bind(console, 'connection error:'));
