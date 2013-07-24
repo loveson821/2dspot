@@ -99,6 +99,7 @@ app.configure(function(){
   app.use(flash());
   app.use(passport.initialize());
   app.use(passport.session());
+  app.use(express.compress());
   //app.use(app.router);
   mongoose.connect(dbPath, function onMongooseError(err) {
       if (err) throw err;

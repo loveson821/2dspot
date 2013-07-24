@@ -101,6 +101,7 @@ module.exports = function(app, mongoose) {
 	  return 0;
 	};
 
+
 	var findByString = function(searchStr, callback) {
 		var searchRegex = new RegExp(searchStr, 'i');
 		Post.find({
@@ -403,6 +404,7 @@ module.exports = function(app, mongoose) {
               array[index] = elem;
                
              }) 
+             data.docs.sort(compare);
              res.send(data)
           })
         })
