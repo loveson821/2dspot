@@ -173,7 +173,7 @@ var FakeAccount = function(){
 		  lastname = RandLastName();
       photo = photos[ Math.floor(Math.random()* pho_size )];
 
-		  regist(firstname,"123",firstname + ' ' +lastname, 'http://ku4n.com/images/'+'profilePictures/'+photo, cha);
+		  regist(firstname,"123",firstname + ' ' +lastname, 'http://inx.io/images/'+'profilePictures/'+photo, cha);
 		  console.log(i);
     });
 	}
@@ -229,7 +229,7 @@ var FakePost = function(){
 			post.date = new Date(2013,6,Math.floor(mt.rand(31)));
 			post.pics = [];
 			pic_num = Math.floor(mt.rand(57)+1);
-			post.pics.push( 'http://ku4n.com/images/uploads/'+pic_num+'.jpg');
+			post.pics.push( 'http://inx.io/images/uploads/'+pic_num+'.jpg');
 			voters_size = Math.floor(mt.rand(201));
 			//hotOrCool = Math.random() > 0.5;
 

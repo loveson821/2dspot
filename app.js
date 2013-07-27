@@ -37,7 +37,7 @@ var logStream = {
 
 //Configurations
 var config = {
-  domain: process.env.DOMAIN || 'http://ku4n.com',
+  domain: process.env.DOMAIN || 'http://inx.io',
   
   redis : {
     host: 'pub-redis-13685.us-east-1-2.2.ec2.garantiadata.com',

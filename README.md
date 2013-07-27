@@ -14,7 +14,7 @@ POST
 		    "title": "Article 2The trustee must not take advantage.",
 		    "author": {
 		      "email": "kenda",
-		      "photoUrl": "http://ku4n.com/images/profilePictures/normal_905386.png",
+		      "photoUrl": "http://inx.io/images/profilePictures/normal_905386.png",
 		      "_id": "51db755ca2c8ec7f7e000248",
 		      "__v": 0,
 		      "settings": {
@@ -32,7 +32,7 @@ POST
 		      "votes": 172
 		    },
 		    "pics": [
-		      "http://ku4n.com/images/uploads/21.jpg"
+		      "http://inx.io/images/uploads/21.jpg"
 		    ],
 		    "downVoters": [],
 		    "upVoters": [
@@ -75,7 +75,7 @@ POST
 		        "votes": -3
 		      },
 		      "pics": [
-		        "http://ku4n.com/images/uploads/30.jpg"
+		        "http://inx.io/images/uploads/30.jpg"
 		      ],
 		      "downVoters": [
 		        "51db755ca2c8ec7f7e00016c",
