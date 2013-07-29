@@ -187,7 +187,7 @@ module.exports = function(app, config, mongoose, nodemailer) {
       email: email,
       name: name,
       password: password,
-      photoUrl: gravatar.url(email, {s: '200', d: 'retro'})
+      photoUrl: gravatar.url(email, {s: '200', d: 'wavatar'})
     });
     user.save(function(err){
           callback(err, user);

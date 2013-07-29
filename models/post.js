@@ -311,7 +311,7 @@ module.exports = function(app, mongoose) {
     var page = req.params.page || 0
     var page_size = 11;
     Post.find({author: req.params.id})
-      .select('-comments -upVoters -downVoters')
+      .select('-comments')
       .sort('-date')
       .limit(page_size)
       .skip(page * page_size)
@@ -321,6 +321,18 @@ module.exports = function(app, mongoose) {
         data = {}
         data.next = docs.length > 10
         data.docs = docs.slice(0,10);
+        data.docs.forEach(function(elem, index, array){
+          if( req.user ){
+            elem.voted = _.contains(elem.upVoters.map(function(x){ return x.toString()}), req.user.id) ? 1 : 
+                        (_.contains(elem.downVoters.map(function(x){ return x.toString()}), req.user.id)  ? 0 : -1)
+          }
+          else{
+            elem.voted = -1
+          }
+            
+          elem.upVoters = elem.upVoters.length;
+          elem.downVoters = elem.downVoters.length;
+        })
         res.send(data);
       });
   });
