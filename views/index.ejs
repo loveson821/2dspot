@@ -1,23 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
 
-<% if (!user) { %>
-	<h2>Welcome! Please log in.</h2>
-<% } else { %>
-	<h2>Hello, <%= user.username %>.</h2>
-<% } %>
+    <title>Example Templates for Bootstrap</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="bootstrap/css/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="assets/css/docs.css" rel="stylesheet">
+
+    <!-- Analytics -->
+    <script>
+    </script>
+
+    <script src="assets/js/modernizr.custom.js"></script>
+  </head>
+
+  <body>
+    <div class="jumbotron">
+      <div class="row">
+        <div class="col-lg-7">
+          <span class="glyphicon glyphicon-ok"></span>
+          <h1>InSight</h1>
+          <p class="subtitle">Stay update for the first hand  information never miss anything is happening around the world.</p>
+          <a href="#" class="btn btn-outline btn-large">Available on iOS</a>
+          <ul class="jumbotron-links">
+            <li>
+              <span>Know more about the creator</span>
+              <a href="http://fridaycreation.com">Friday Creation</a>
+            </li>
+          </ul>
+        </div>
+        <div class="col-lg-5">
+
+          <div class="phone">
+            <img class="screenshot" src="assets/images/screen1.png" width="272px"/>
+          </div>
+        </div>
+      </div>
+    </div>
+        <!-- Callout for the old docs link -->
+    <div class="bs-old-docs">
+      <div class="container">
+        Want to know more our productions? <a href="#">Here you are</a>
+      </div>
+    </div>
+    
+    
+    <div class="container">
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+
+      <div class="featurette">
+        <img class="featurette-image img-circle pull-left" src="assets/images/feature1.png">
+        <h2 class="featurette-heading">Channel subscription <span class="text-muted">Manage yourself.</span></h2>
+        <p class="lead">Just subscribe the channels that you may interest in. There must be something surprising you!</p>
+      </div>
+
+      <hr class="featurette-divider">
+
+      <div class="featurette">
+        <img class="featurette-image img-circle pull-right" src="assets/images/feature2.png">
+        <h2 class="featurette-heading">Bookmark <span class="text-muted">Mark as you like</span></h2>
+        <p class="lead">
+          Marked those sights that you wanted to read later. No need to worry about missing the sight.  
+        </p>
+      </div>
 
 
 
-<form action="/login" method="post">
-	<div>
-	<label>Username:</label>
-	<input type="text" name="username"/><br/>
-	</div>
-	<div>
-	<label>Password:</label>
-	<input type="password" name="password"/>
-	</div>
-	<div>
-	<input type="submit" value="Submit"/>
-	</div>
-</form>
-<p><small>Hint - bob:secret</small></p>
+      <hr class="featurette-divider">
+
+      <div class="featurette">
+        <img class="featurette-image img-circle pull-left" src="assets/images/feature3.png">
+        <h2 class="featurette-heading">Voting <span class="text-muted">Make your choice</span></h2>
+        <p class="lead"> Each voting will affect the sight ordering. Let it stays on the top of the corresponding channel if you like it.</p>
+      </div>
+
+      <hr class="featurette-divider">
+
+    </div><!-- /.container -->
+
+    <footer>
+      <div class="container text-center">
+        <p>©2013 Friday Creation, Inc. All rights reserved.</p>
+      </div>
+    </footer>
+    <script src="bootstrap/js/bootstrap.min.js"></script>
+    <script src="assets/js/retina.js"></script>
+  </body>
+</html>
