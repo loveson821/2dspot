@@ -310,30 +310,36 @@ module.exports = function(app, mongoose) {
   app.get('/api/v1/posts/user/:id/:page?',app.ensureAuthenticated, function(req, res){
     var page = req.params.page || 0
     var page_size = 11;
-    Post.find({author: req.params.id})
+    var query = Post.find({author: req.params.id})
+    query
       .select('-comments')
       .sort('-date')
       .limit(page_size)
-      .skip(page * page_size)
+      .skip(page * (page_size-1))
       .populate('channel', 'name')
       .populate('author', 'email _id name photoUrl')
       .exec(function(err, docs){
-        data = {}
-        data.next = docs.length > 10
-        data.docs = docs.slice(0,10);
-        data.docs.forEach(function(elem, index, array){
-          if( req.user ){
-            elem.voted = _.contains(elem.upVoters.map(function(x){ return x.toString()}), req.user.id) ? 1 : 
-                        (_.contains(elem.downVoters.map(function(x){ return x.toString()}), req.user.id)  ? 0 : -1)
-          }
-          else{
-            elem.voted = -1
-          }
+        query.count(function(err, count){
+          data = {}
+          data.count = count
+          data.next = docs.length > 10
+          data.docs = docs.slice(0,10);
+          data.docs.forEach(function(elem, index, array){
+            elem = elem.toObject();
+            if( req.user ){
+              elem.voted = _.contains(elem.upVoters.map(function(x){ return x.toString()}), req.user.id) ? 1 : 
+                          (_.contains(elem.downVoters.map(function(x){ return x.toString()}), req.user.id)  ? 0 : -1)
+            }
+            else{
+              elem.voted = -1
+            }
             
-          elem.upVoters = elem.upVoters.length;
-          elem.downVoters = elem.downVoters.length;
-        })
-        res.send(data);
+            elem.upVoters = elem.upVoters.length;
+            elem.downVoters = elem.downVoters.length;
+            array[index] = elem;
+          })
+          res.send(data);
+        });
       });
   });
 
